@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import {
+  Calendar,
+  Clock,
+  Phone,
+  Trash2,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  DollarSign,
+  User,
+  FileText,
+  X
+} from 'lucide-react';
 import './App.css';
 
 export default function App() {
@@ -15,7 +28,8 @@ export default function App() {
 
   // Նոր գրանցման մոդալի (պատուհանի) վիճակներ
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedHourForNew, setSelectedHourForNew] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientService, setClientService] = useState('');
@@ -35,8 +49,12 @@ export default function App() {
     }
   };
 
-  // Աշխատանքային ժամեր
-  const workingHours = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+  // Աշխատանքային ժամեր (ընդլայնված մինչև 22:00)
+  const workingHours = [
+    '10:00', '11:00', '12:00', '13:00', '14:00',
+    '15:00', '16:00', '17:00', '18:00', '19:00',
+    '20:00', '21:00', '22:00'
+  ];
 
   // Ամիսների ցանկ
   const monthsList = [
@@ -54,8 +72,9 @@ export default function App() {
     { value: '12', name: 'Դեկտեմբեր' },
   ];
 
-  // Տարիների ցանկ
-  const yearsList = ['2024', '2025', '2026', '2027'];
+  // Տարիների ցանկ (ընթացիկ տարուց սկսած մոտակա 20 տարիները)
+  const currentYearNum = new Date().getFullYear();
+  const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
 
   // Ընտրված ամսվա օրերի գեներացիա
   const daysInMonth = Array.from({ length: 31 }, (_, i) => {
@@ -80,7 +99,11 @@ export default function App() {
 
   // Երբ սեղմում են ազատ ժամի վրա՝ բացել ֆորման
   const handleFreeSlotClick = (hour) => {
-    setSelectedHourForNew(hour);
+    setStartTime(hour);
+    const hourNum = parseInt(hour.substring(0, 2), 10);
+    const endHourStr = `${hourNum + 1 < 10 ? '0' : ''}${hourNum + 1}:00`;
+    setEndTime(endHourStr);
+
     setClientName('');
     setClientPhone('');
     setClientService('');
@@ -88,13 +111,13 @@ export default function App() {
     setIsModalOpen(true);
   };
 
-  // Նոր գրանցման պահպանում Supabase-ում (առանց .select()-ի, ուղղակի fetch)
+  // Նոր գրանցման պահպանում Supabase-ում
   const handleSaveAppointment = async (e) => {
     e.preventDefault();
 
     const newRecord = {
       date: selectedDate,
-      time: selectedHourForNew,
+      time: `${startTime} - ${endTime}`,
       name: clientName,
       phone: clientPhone,
       service: clientService,
@@ -109,6 +132,20 @@ export default function App() {
     } else {
       await fetchAppointments();
       setIsModalOpen(false);
+    }
+  };
+
+  // Գրանցման ջնջում
+  const handleDeleteAppointment = async (id) => {
+    if (!window.confirm('Վստա՞հ եք, որ ցանկանում եք ջնջել այս գրանցումը:')) return;
+
+    const { error } = await supabase.from('appointments').delete().eq('id', id);
+
+    if (error) {
+      console.error('Սխալ գրանցումը ջնջելիս:', error);
+      alert('Չհաջողվեց ջնջել գրանցումը: ' + error.message);
+    } else {
+      await fetchAppointments();
     }
   };
 
@@ -127,10 +164,12 @@ export default function App() {
       <header className="app-header">
         {currentView === 'day' ? (
           <>
-            <button className="back-btn" onClick={() => setCurrentView('month')}>
-              ← Ամիս
+            <button className="back-btn" onClick={() => setCurrentView('month')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ChevronLeft size={18} /> Ամիս
             </button>
-            <h1>{selectedDate}</h1>
+            <h1 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.95rem' }}>
+              <Calendar size={16} color="#0071e3" /> {selectedDate}
+            </h1>
             <div style={{ width: '40px' }}></div>
           </>
         ) : (
@@ -193,7 +232,9 @@ export default function App() {
 
             return (
               <div key={hour} className="time-slot-row">
-                <div className="slot-time">{hour}</div>
+                <div className="slot-time" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Clock size={12} color="#86868b" /> {hour}
+                </div>
                 <div
                   className={`slot-content ${appointment ? 'booked' : 'free-slot'}`}
                   onClick={() => !appointment && handleFreeSlotClick(hour)}
@@ -202,18 +243,47 @@ export default function App() {
                   {appointment ? (
                     <>
                       <div className="client-info-row">
-                        <span className="client-name">{appointment.name}</span>
-                        <a href={`tel:${appointment.phone}`} className="call-link" onClick={(e) => e.stopPropagation()}>
-                          📞 {appointment.phone}
-                        </a>
+                        <span className="client-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <User size={14} color="#0071e3" /> {appointment.name}
+                        </span>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <a href={`tel:${appointment.phone}`} className="call-link" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Phone size={12} /> {appointment.phone}
+                          </a>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteAppointment(appointment.id);
+                            }}
+                            style={{
+                              background: 'rgba(255, 59, 48, 0.1)',
+                              color: '#ff3b30',
+                              border: 'none',
+                              padding: '5px 8px',
+                              borderRadius: '10px',
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <Trash2 size={12} /> Ջնջել
+                          </button>
+                        </div>
                       </div>
                       <div className="service-details">
-                        <span>{appointment.service}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <FileText size={12} /> {appointment.service} ({appointment.time})
+                        </span>
                         <span className="service-price">{appointment.price} ֏</span>
                       </div>
                     </>
                   ) : (
-                    <div style={{ color: '#8e8e93', fontSize: '0.85rem' }}>Ազատ է (սեղմեք գրանցելու համար)</div>
+                    <div style={{ color: '#8e8e93', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Plus size={14} /> Ազատ է (սեղմեք գրանցելու համար)
+                    </div>
                   )}
                 </div>
               </div>
@@ -228,9 +298,31 @@ export default function App() {
           <div className="modal-box">
             <div className="modal-header-indicator"></div>
             <h3>Գրանցում՝ {selectedDate}</h3>
-            <p className="modal-subtitle">Ժամը՝ {selectedHourForNew}</p>
+            <p className="modal-subtitle">Նշեք ժամային միջակայքը և տվյալները</p>
 
             <form onSubmit={handleSaveAppointment}>
+              {/* Ժամային միջակայքի ընտրություն */}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Սկիզբ</label>
+                  <input
+                    type="time"
+                    required
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Ավարտ</label>
+                  <input
+                    type="time"
+                    required
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                  />
+                </div>
+              </div>
+
               <div className="form-group">
                 <label>Հաճախորդի անուն</label>
                 <input
@@ -284,11 +376,15 @@ export default function App() {
       <footer className="financial-footer">
         <div className="finance-item">
           <span className="finance-label">Ամսվա վաստակ</span>
-          <span className="finance-value" style={{ color: '#0071e3' }}>{monthlyRevenue.toLocaleString()} ֏</span>
+          <span className="finance-value" style={{ color: '#0071e3', display: 'flex', alignItems: 'center', gap: '2px' }}>
+            {monthlyRevenue.toLocaleString()} ֏
+          </span>
         </div>
         <div className="finance-item" style={{ textAlign: 'right' }}>
           <span className="finance-label">Տարեկան վաստակ ({selectedYear})</span>
-          <span className="finance-value" style={{ color: '#34c759' }}>{yearlyRevenue.toLocaleString()} ֏</span>
+          <span className="finance-value" style={{ color: '#34c759', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '2px' }}>
+            {yearlyRevenue.toLocaleString()} ֏
+          </span>
         </div>
       </footer>
     </div>
