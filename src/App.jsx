@@ -8,7 +8,6 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
-  DollarSign,
   User,
   FileText,
   X
@@ -21,12 +20,12 @@ export default function App() {
 
   // Տարվա և ամսվա ընտրության վիճակներ
   const [selectedYear, setSelectedYear] = useState('2026');
-  const [selectedMonth, setSelectedMonth] = useState('08'); // Օգոստոս
+  const [selectedMonth, setSelectedMonth] = useState('09'); // Սեպտեմբեր
 
   // Գրանցումների զանգվածը բազայից
   const [appointments, setAppointments] = useState([]);
 
-  // Նոր գրանցման մոդալի (պատուհանի) վիճակներ
+  // Նոր գրանցման մոդալի վիճակներ
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -35,7 +34,6 @@ export default function App() {
   const [clientService, setClientService] = useState('');
   const [clientPrice, setClientPrice] = useState('');
 
-  // Բազայից տվյալների բեռնում բացվելիս
   useEffect(() => {
     fetchAppointments();
   }, []);
@@ -49,7 +47,7 @@ export default function App() {
     }
   };
 
-  // Աշխատանքային ժամեր (ընդլայնված մինչև 22:00)
+  // Աշխատանքային ժամեր (մինչև 22:00)
   const workingHours = [
     '10:00', '11:00', '12:00', '13:00', '14:00',
     '15:00', '16:00', '17:00', '18:00', '19:00',
@@ -72,11 +70,35 @@ export default function App() {
     { value: '12', name: 'Դեկտեմբեր' },
   ];
 
-  // Տարիների ցանկ (ընթացիկ տարուց սկսած մոտակա 20 տարիները)
+  // Սեզոնային բարձրորակ նկարներ ըստ ամիսների (Unsplash-ից)
+  const monthThemes = {
+    // Ձմեռ (Դեկտեմբեր, Հունվար, Փետրվար) - Ձյունոտ բնություն
+    '12': { image: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?q=80&w=1000&auto=format&fit=crop', accent: '#38bdf8' },
+    '01': { image: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?q=80&w=1000&auto=format&fit=crop', accent: '#38bdf8' },
+    '02': { image: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?q=80&w=1000&auto=format&fit=crop', accent: '#38bdf8' },
+
+    // Գարուն (Մարտ, Ապրիլ, Մայիս) - Ծաղկող այգի / կանաչ բնություն
+    '03': { image: 'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?q=80&w=1000&auto=format&fit=crop', accent: '#4ade80' },
+    '04': { image: 'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?q=80&w=1000&auto=format&fit=crop', accent: '#4ade80' },
+    '05': { image: 'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?q=80&w=1000&auto=format&fit=crop', accent: '#4ade80' },
+
+    // Ամառ (Հունիս, Հուլիս, Օգոստոս) - Արևային ծովափ / կանաչ անտառ
+    '06': { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop', accent: '#facc15' },
+    '07': { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop', accent: '#facc15' },
+    '08': { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop', accent: '#facc15' },
+
+    // Աշուն (Սեպտեմբեր, Հոկտեմբեր, Նոյեմբեր) - Ոսկեգույն աշնանային տերևներ
+    '09': { image: 'https://images.unsplash.com/photo-1507714619842-8a9d17d5a5e3?q=80&w=1000&auto=format&fit=crop', accent: '#fb923c' },
+    '10': { image: 'https://images.unsplash.com/photo-1507714619842-8a9d17d5a5e3?q=80&w=1000&auto=format&fit=crop', accent: '#fb923c' },
+    '11': { image: 'https://images.unsplash.com/photo-1507714619842-8a9d17d5a5e3?q=80&w=1000&auto=format&fit=crop', accent: '#fb923c' },
+  };
+
+  const currentTheme = monthThemes[selectedMonth] || monthThemes['09'];
+
+  // Տարիների ցանկ
   const currentYearNum = new Date().getFullYear();
   const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
 
-  // Ընտրված ամսվա օրերի գեներացիա
   const daysInMonth = Array.from({ length: 31 }, (_, i) => {
     const dayNum = i + 1;
     const formattedDay = dayNum < 10 ? `0${dayNum}` : `${dayNum}`;
@@ -86,18 +108,15 @@ export default function App() {
     };
   });
 
-  // Ստանալ տվյալ օրվա գրանցումների քանակը
   const getAppointmentsCountForDate = (dateStr) => {
     return appointments.filter(app => app.date === dateStr).length;
   };
 
-  // Օրվա վրա սեղմելիս
   const handleDayClick = (dateStr) => {
     setSelectedDate(dateStr);
     setCurrentView('day');
   };
 
-  // Երբ սեղմում են ազատ ժամի վրա՝ բացել ֆորման
   const handleFreeSlotClick = (hour) => {
     setStartTime(hour);
     const hourNum = parseInt(hour.substring(0, 2), 10);
@@ -111,7 +130,6 @@ export default function App() {
     setIsModalOpen(true);
   };
 
-  // Նոր գրանցման պահպանում Supabase-ում
   const handleSaveAppointment = async (e) => {
     e.preventDefault();
 
@@ -135,7 +153,6 @@ export default function App() {
     }
   };
 
-  // Գրանցման ջնջում
   const handleDeleteAppointment = async (id) => {
     if (!window.confirm('Վստա՞հ եք, որ ցանկանում եք ջնջել այս գրանցումը:')) return;
 
@@ -149,7 +166,6 @@ export default function App() {
     }
   };
 
-  // ՖԻՆԱՆՍԱԿԱՆ ՀԱՇՎԱՐԿՆԵՐ ԲԱԶԱՅԻՑ
   const monthlyRevenue = appointments
     .filter(app => app.date && app.date.startsWith(`${selectedYear}-${selectedMonth}`))
     .reduce((sum, app) => sum + Number(app.price || 0), 0);
@@ -159,7 +175,16 @@ export default function App() {
     .reduce((sum, app) => sum + Number(app.price || 0), 0);
 
   return (
-    <div className="mobile-container">
+    <div
+      className="mobile-container"
+      style={{
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url(${currentTheme.image})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        transition: 'background-image 0.6s ease-in-out',
+        color: '#f8fafc'
+      }}
+    >
       {/* Վերնագիր և Նավիգացիա */}
       <header className="app-header">
         {currentView === 'day' ? (
@@ -168,7 +193,7 @@ export default function App() {
               <ChevronLeft size={18} /> Ամիս
             </button>
             <h1 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.95rem' }}>
-              <Calendar size={16} color="#0071e3" /> {selectedDate}
+              <Calendar size={16} color={currentTheme.accent} /> {selectedDate}
             </h1>
             <div style={{ width: '40px' }}></div>
           </>
@@ -214,7 +239,7 @@ export default function App() {
                   onClick={() => handleDayClick(d.date)}
                 >
                   <span>{d.dayNum}</span>
-                  {hasApp && <div className="appointment-badge">{count}</div>}
+                  {hasApp && <div className="appointment-badge" style={{ background: currentTheme.accent, color: '#0f172a' }}>{count}</div>}
                 </div>
               );
             })}
@@ -232,8 +257,8 @@ export default function App() {
 
             return (
               <div key={hour} className="time-slot-row">
-                <div className="slot-time" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Clock size={12} color="#86868b" /> {hour}
+                <div className="slot-time" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#cbd5e1' }}>
+                  <Clock size={12} color={currentTheme.accent} /> {hour}
                 </div>
                 <div
                   className={`slot-content ${appointment ? 'booked' : 'free-slot'}`}
@@ -244,7 +269,7 @@ export default function App() {
                     <>
                       <div className="client-info-row">
                         <span className="client-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <User size={14} color="#0071e3" /> {appointment.name}
+                          <User size={14} color={currentTheme.accent} /> {appointment.name}
                         </span>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                           <a href={`tel:${appointment.phone}`} className="call-link" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -256,8 +281,8 @@ export default function App() {
                               handleDeleteAppointment(appointment.id);
                             }}
                             style={{
-                              background: 'rgba(255, 59, 48, 0.1)',
-                              color: '#ff3b30',
+                              background: 'rgba(255, 59, 48, 0.2)',
+                              color: '#ff453a',
                               border: 'none',
                               padding: '5px 8px',
                               borderRadius: '10px',
@@ -277,11 +302,11 @@ export default function App() {
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <FileText size={12} /> {appointment.service} ({appointment.time})
                         </span>
-                        <span className="service-price">{appointment.price} ֏</span>
+                        <span className="service-price" style={{ color: currentTheme.accent }}>{appointment.price} ֏</span>
                       </div>
                     </>
                   ) : (
-                    <div style={{ color: '#8e8e93', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ color: '#94a3b8', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Plus size={14} /> Ազատ է (սեղմեք գրանցելու համար)
                     </div>
                   )}
@@ -292,7 +317,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Նոր գրանցման Մոդալ (Modal) պատուհան */}
+      {/* Նոր գրանցման Մոդալ պատուհան */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-box">
@@ -301,7 +326,6 @@ export default function App() {
             <p className="modal-subtitle">Նշեք ժամային միջակայքը և տվյալները</p>
 
             <form onSubmit={handleSaveAppointment}>
-              {/* Ժամային միջակայքի ընտրություն */}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>Սկիզբ</label>
@@ -365,7 +389,7 @@ export default function App() {
               </div>
               <div className="modal-actions">
                 <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>Չեղարկել</button>
-                <button type="submit" className="save-btn">Պահպանել</button>
+                <button type="submit" className="save-btn" style={{ background: currentTheme.accent, color: '#0f172a' }}>Պահպանել</button>
               </div>
             </form>
           </div>
@@ -375,14 +399,14 @@ export default function App() {
       {/* Ներքևի հատված՝ Ամսական և Տարեկան եկամուտների ցուցիչով */}
       <footer className="financial-footer">
         <div className="finance-item">
-          <span className="finance-label">Ամսվա վաստակ</span>
-          <span className="finance-value" style={{ color: '#0071e3', display: 'flex', alignItems: 'center', gap: '2px' }}>
+          <span className="finance-label" style={{ color: '#94a3b8' }}>Ամսվա վաստակ</span>
+          <span className="finance-value" style={{ color: currentTheme.accent, display: 'flex', alignItems: 'center', gap: '2px' }}>
             {monthlyRevenue.toLocaleString()} ֏
           </span>
         </div>
         <div className="finance-item" style={{ textAlign: 'right' }}>
-          <span className="finance-label">Տարեկան վաստակ ({selectedYear})</span>
-          <span className="finance-value" style={{ color: '#34c759', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '2px' }}>
+          <span className="finance-label" style={{ color: '#94a3b8' }}>Տարեկան վաստակ ({selectedYear})</span>
+          <span className="finance-value" style={{ color: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '2px' }}>
             {yearlyRevenue.toLocaleString()} ֏
           </span>
         </div>
