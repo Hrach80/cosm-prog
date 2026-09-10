@@ -1,8 +1,10 @@
 /* Ընդհանուր մոբայլ կոնտեյներ - Glassmorphism և Նեոմորֆիկ խառը ոճ */
 .mobile-container {
-  max-width: 80vh;
+  width: 100%;
+  max-width: 450px;
+  /* Փոխարինել ենք 80vh-ից, որ հեռախոսի վրա լայնությունը չգերազանցի էկրանը */
   margin: 20px auto;
-  min-height: 80vh;
+  min-height: 85vh;
   border-radius: 32px;
   padding: 20px;
   display: flex;
@@ -14,8 +16,17 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
+  overflow-x: hidden;
+  /* Արգելափակում է ցանկացած հորիզոնական շարժ կամ սքրոլ */
 }
 
+/* Համոզվեք նաև, որ body-ն կամ html-ը չունեն հորիզոնական սքրոլ */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  background-color: #0f172a;
+}
 /* Վերնագիր և Նավիգացիա */
 .app-header {
   display: flex;
