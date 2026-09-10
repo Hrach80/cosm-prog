@@ -14,6 +14,12 @@ import {
 } from 'lucide-react';
 import './App.css';
 
+// Ներմուծում ենք եղանակային նկարները src/assets պանակից
+import winterImg from './assets/winter.jpg';
+import springImg from './assets/spring.jpg';
+import summerImg from './assets/summer.jpg';
+import autumnImg from './assets/autumn.jpg';
+
 export default function App() {
   const [currentView, setCurrentView] = useState('month'); // 'month' | 'day'
   const [selectedDate, setSelectedDate] = useState(null);
@@ -47,7 +53,7 @@ export default function App() {
     }
   };
 
-  // Աշխատանքային ժամեր (մինչև 22:00)
+  // Աշխատանքային ժամեր (ընդլայնված մինչև 22:00)
   const workingHours = [
     '10:00', '11:00', '12:00', '13:00', '14:00',
     '15:00', '16:00', '17:00', '18:00', '19:00',
@@ -70,27 +76,27 @@ export default function App() {
     { value: '12', name: 'Դեկտեմբեր' },
   ];
 
-  // Սեզոնային բարձրորակ նկարներ ըստ ամիսների (Unsplash-ից)
+  // Կապում ենք ամիսները համապատասխան սեզոնային նկարների հետ
   const monthThemes = {
-    // Ձմեռ (Դեկտեմբեր, Հունվար, Փետրվար) - Ձյունոտ բնություն
-    '12': { image: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?q=80&w=1000&auto=format&fit=crop', accent: '#38bdf8' },
-    '01': { image: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?q=80&w=1000&auto=format&fit=crop', accent: '#38bdf8' },
-    '02': { image: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?q=80&w=1000&auto=format&fit=crop', accent: '#38bdf8' },
+    // Ձմեռ
+    '12': { image: winterImg, accent: '#38bdf8' },
+    '01': { image: winterImg, accent: '#38bdf8' },
+    '02': { image: winterImg, accent: '#38bdf8' },
 
-    // Գարուն (Մարտ, Ապրիլ, Մայիս) - Ծաղկող այգի / կանաչ բնություն
-    '03': { image: 'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?q=80&w=1000&auto=format&fit=crop', accent: '#4ade80' },
-    '04': { image: 'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?q=80&w=1000&auto=format&fit=crop', accent: '#4ade80' },
-    '05': { image: 'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?q=80&w=1000&auto=format&fit=crop', accent: '#4ade80' },
+    // Գարուն
+    '03': { image: springImg, accent: '#4ade80' },
+    '04': { image: springImg, accent: '#4ade80' },
+    '05': { image: springImg, accent: '#4ade80' },
 
-    // Ամառ (Հունիս, Հուլիս, Օգոստոս) - Արևային ծովափ / կանաչ անտառ
-    '06': { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop', accent: '#facc15' },
-    '07': { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop', accent: '#facc15' },
-    '08': { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop', accent: '#facc15' },
+    // Ամառ
+    '06': { image: summerImg, accent: '#facc15' },
+    '07': { image: summerImg, accent: '#facc15' },
+    '08': { image: summerImg, accent: '#facc15' },
 
-    // Աշուն (Սեպտեմբեր, Հոկտեմբեր, Նոյեմբեր) - Ոսկեգույն աշնանային տերևներ
-    '09': { image: 'https://images.unsplash.com/photo-1507714619842-8a9d17d5a5e3?q=80&w=1000&auto=format&fit=crop', accent: '#fb923c' },
-    '10': { image: 'https://images.unsplash.com/photo-1507714619842-8a9d17d5a5e3?q=80&w=1000&auto=format&fit=crop', accent: '#fb923c' },
-    '11': { image: 'https://images.unsplash.com/photo-1507714619842-8a9d17d5a5e3?q=80&w=1000&auto=format&fit=crop', accent: '#fb923c' },
+    // Աշուն
+    '09': { image: autumnImg, accent: '#fb923c' },
+    '10': { image: autumnImg, accent: '#fb923c' },
+    '11': { image: autumnImg, accent: '#fb923c' },
   };
 
   const currentTheme = monthThemes[selectedMonth] || monthThemes['09'];
@@ -178,7 +184,7 @@ export default function App() {
     <div
       className="mobile-container"
       style={{
-        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url(${currentTheme.image})`,
+        backgroundImage: `linear-gradient(rgba(7, 27, 75, 0.75), rgba(15, 23, 42, 0.75)), url(${currentTheme.image})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         transition: 'background-image 0.6s ease-in-out',
