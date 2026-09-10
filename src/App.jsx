@@ -9,7 +9,9 @@ import {
   ChevronLeft,
   User,
   FileText,
-  LogOut
+  LogOut,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import './App.css';
 
@@ -25,6 +27,7 @@ export default function App() {
   const [isSignUp, setIsSignUp] = useState(false); // false = Մուտք, true = Գրանցում
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Գաղտնաբառի տեսանելիության state
   const [authError, setAuthError] = useState('');
 
   const [currentView, setCurrentView] = useState('month'); // 'month' | 'day'
@@ -239,13 +242,29 @@ export default function App() {
             </div>
             <div className="form-group">
               <label>Գաղտնաբառ (Password)</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="******"
-              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="******"
+                  style={{ width: '100%', paddingRight: '40px' }}
+                />
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    cursor: 'pointer',
+                    color: '#94a3b8',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </span>
+              </div>
             </div>
             <button type="submit" className="save-btn" style={{ width: '100%', marginTop: '10px', background: '#38bdf8', color: '#0f172a' }}>
               {isSignUp ? 'Գրանցվել' : 'Մուտք'}
