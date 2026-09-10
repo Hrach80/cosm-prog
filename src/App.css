@@ -1,8 +1,8 @@
 /* Ընդհանուր մոբայլ կոնտեյներ - Glassmorphism և Նեոմորֆիկ խառը ոճ */
 .mobile-container {
-  max-width: 90vh;
+  max-width: 95vh;
   margin: 20px auto;
-  min-height: 86vh;
+  min-height: 92vh;
   border-radius: 32px;
   padding: 20px;
   display: flex;
