@@ -7,10 +7,9 @@ import {
   Trash2,
   Plus,
   ChevronLeft,
-  ChevronRight,
   User,
   FileText,
-  X
+  LogOut
 } from 'lucide-react';
 import './App.css';
 
@@ -21,17 +20,21 @@ import summerImg from './assets/summer.jpg';
 import autumnImg from './assets/autumn.jpg';
 
 export default function App() {
+  // Օգտատիրոջ վիճակը (Session)
+  const [session, setSession] = useState(null);
+  const [isSignUp, setIsSignUp] = useState(false); // false = Մուտք, true = Գրանցում
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+
   const [currentView, setCurrentView] = useState('month'); // 'month' | 'day'
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Տարվա և ամսվա ընտրության վիճակներ
   const [selectedYear, setSelectedYear] = useState('2026');
-  const [selectedMonth, setSelectedMonth] = useState('09'); // Սեպտեմբեր
+  const [selectedMonth, setSelectedMonth] = useState('09');
 
-  // Գրանցումների զանգվածը բազայից
   const [appointments, setAppointments] = useState([]);
 
-  // Նոր գրանցման մոդալի վիճակներ
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -40,9 +43,25 @@ export default function App() {
   const [clientService, setClientService] = useState('');
   const [clientPrice, setClientPrice] = useState('');
 
+  // Ստուգում ենք օգտատիրոջ մուտքը բացելիս
   useEffect(() => {
-    fetchAppointments();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  // Երբ օգտատերը մուտք է գործում, բեռնում ենք միայն իր գրանցումները
+  useEffect(() => {
+    if (session) {
+      fetchAppointments();
+    }
+  }, [session]);
 
   const fetchAppointments = async () => {
     const { data, error } = await supabase.from('appointments').select('*');
@@ -53,14 +72,31 @@ export default function App() {
     }
   };
 
-  // Աշխատանքային ժամեր (ընդլայնված մինչև 22:00)
+  // Մուտք կամ Գրանցում համակարգ
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) setAuthError(error.message);
+      else alert('Դուք հաջողությամբ գրանցվեցիք։');
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setAuthError('Սխալ էլ. փոստ կամ գաղտնաբառ');
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const workingHours = [
     '10:00', '11:00', '12:00', '13:00', '14:00',
     '15:00', '16:00', '17:00', '18:00', '19:00',
     '20:00', '21:00', '22:00'
   ];
 
-  // Ամիսների ցանկ
   const monthsList = [
     { value: '01', name: 'Հունվար' },
     { value: '02', name: 'Փետրվար' },
@@ -76,32 +112,22 @@ export default function App() {
     { value: '12', name: 'Դեկտեմբեր' },
   ];
 
-  // Կապում ենք ամիսները համապատասխան սեզոնային նկարների հետ
   const monthThemes = {
-    // Ձմեռ
     '12': { image: winterImg, accent: '#38bdf8' },
     '01': { image: winterImg, accent: '#38bdf8' },
     '02': { image: winterImg, accent: '#38bdf8' },
-
-    // Գարուն
     '03': { image: springImg, accent: '#4ade80' },
     '04': { image: springImg, accent: '#4ade80' },
     '05': { image: springImg, accent: '#4ade80' },
-
-    // Ամառ
     '06': { image: summerImg, accent: '#facc15' },
     '07': { image: summerImg, accent: '#facc15' },
     '08': { image: summerImg, accent: '#facc15' },
-
-    // Աշուն
     '09': { image: autumnImg, accent: '#fb923c' },
     '10': { image: autumnImg, accent: '#fb923c' },
     '11': { image: autumnImg, accent: '#fb923c' },
   };
 
   const currentTheme = monthThemes[selectedMonth] || monthThemes['09'];
-
-  // Տարիների ցանկ
   const currentYearNum = new Date().getFullYear();
   const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
 
@@ -140,6 +166,7 @@ export default function App() {
     e.preventDefault();
 
     const newRecord = {
+      user_id: session.user.id, // Կապում ենք տվյալը հենց մուտք գործած օգտատիրոջ հետ
       date: selectedDate,
       time: `${startTime} - ${endTime}`,
       name: clientName,
@@ -156,6 +183,7 @@ export default function App() {
     } else {
       await fetchAppointments();
       setIsModalOpen(false);
+      window.location.href = `tel:${clientPhone}`;
     }
   };
 
@@ -180,11 +208,70 @@ export default function App() {
     .filter(app => app.date && app.date.startsWith(`${selectedYear}`))
     .reduce((sum, app) => sum + Number(app.price || 0), 0);
 
+  // Եթե օգտատերը մուտք չի գործել, ցույց ենք տալիս Մուտքի/Գրանցման էջը՝ նեոմորֆիկ ոճերով
+  if (!session) {
+    return (
+      <div
+        className="auth-container"
+        style={{
+          backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url(${winterImg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          color: '#f8fafc'
+        }}
+      >
+        <div className="auth-card">
+          <h2>{isSignUp ? 'Հաշվի ստեղծում' : 'Մուտք Համակարգ'}</h2>
+          <p className="modal-subtitle">{isSignUp ? 'Լրացրեք տվյալները գրանցվելու համար' : 'Մուտք գործեք ձեր օրացույցից օգտվելու համար'}</p>
+
+          {authError && <p style={{ color: '#ff453a', fontSize: '0.8rem', textAlign: 'center', marginBottom: '10px' }}>{authError}</p>}
+
+          <form onSubmit={handleAuth}>
+            <div className="form-group">
+              <label>Էլ. փոստ (Email)</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@mail.com"
+              />
+            </div>
+            <div className="form-group">
+              <label>Գաղտնաբառ (Password)</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="******"
+              />
+            </div>
+            <button type="submit" className="save-btn" style={{ width: '100%', marginTop: '10px', background: '#38bdf8', color: '#0f172a' }}>
+              {isSignUp ? 'Գրանցվել' : 'Մուտք'}
+            </button>
+          </form>
+
+          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.8rem', color: '#94a3b8' }}>
+            {isSignUp ? 'Արդե՞ն ունեք հաշիվ:' : 'Չունե՞ք հաշիվ:'}{' '}
+            <span
+              style={{ color: '#38bdf8', cursor: 'pointer', fontWeight: 'bold' }}
+              onClick={() => setIsSignUp(!isSignUp)}
+            >
+              {isSignUp ? 'Մուտք գործեք' : 'Գրանցվեք'}
+            </span>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Եթե մուտք է գործել, ցույց ենք տալիս հիմնական օրացույցը
   return (
     <div
       className="mobile-container"
       style={{
-        backgroundImage: `linear-gradient(rgba(7, 27, 75, 0.75), rgba(15, 23, 42, 0.75)), url(${currentTheme.image})`,
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url(${currentTheme.image})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         transition: 'background-image 0.6s ease-in-out',
@@ -201,34 +288,42 @@ export default function App() {
             <h1 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.95rem' }}>
               <Calendar size={16} color={currentTheme.accent} /> {selectedDate}
             </h1>
-            <div style={{ width: '40px' }}></div>
+            <button className="back-btn" onClick={handleLogout} title="Ելք" style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a' }}>
+              <LogOut size={16} />
+            </button>
           </>
         ) : (
-          <div className="header-title-block">
-            <select
-              className="select-dropdown"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-            >
-              {monthsList.map(m => (
-                <option key={m.value} value={m.value}>{m.name}</option>
-              ))}
-            </select>
+          <div className="header-title-block" style={{ justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <select
+                className="select-dropdown"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              >
+                {monthsList.map(m => (
+                  <option key={m.value} value={m.value}>{m.name}</option>
+                ))}
+              </select>
 
-            <select
-              className="select-dropdown"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-            >
-              {yearsList.map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
+              <select
+                className="select-dropdown"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                {yearsList.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+
+            <button className="back-btn" onClick={handleLogout} title="Ելք համակարգից" style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', padding: '8px' }}>
+              <LogOut size={16} />
+            </button>
           </div>
         )}
       </header>
 
-      {/* 1. Ամսվա տեսք (Month View) */}
+      {/* 1. Ամսվա տեսք */}
       {currentView === 'month' && (
         <div className="month-grid-container">
           <div className="weekdays-header">
@@ -253,7 +348,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. Օրվա ժամային տեսք (Day Hourly View) */}
+      {/* 2. Օրվա ժամային տեսք */}
       {currentView === 'day' && (
         <div className="day-timeline">
           {workingHours.map((hour) => {
@@ -323,7 +418,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Նոր գրանցման Մոդալ պատուհան */}
+      {/* Մոդալ պատուհան */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-box">
@@ -342,7 +437,7 @@ export default function App() {
                     onChange={(e) => setStartTime(e.target.value)}
                   />
                 </div>
-                <div className="form-group" style={{ flex: 1 }}>
+                <div className="end-group form-group" style={{ flex: 1 }}>
                   <label>Ավարտ</label>
                   <input
                     type="time"
@@ -360,7 +455,7 @@ export default function App() {
                   required
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Օր. Աննա Սարգսյան"
+                  placeholder="Օր. Հաճախորդի անուն"
                 />
               </div>
               <div className="form-group">
@@ -380,7 +475,7 @@ export default function App() {
                   required
                   value={clientService}
                   onChange={(e) => setClientService(e.target.value)}
-                  placeholder="Օր. Դեմքի մաքրություն"
+                  placeholder="Օր. Ծառայության անվանում"
                 />
               </div>
               <div className="form-group">
@@ -390,7 +485,7 @@ export default function App() {
                   required
                   value={clientPrice}
                   onChange={(e) => setClientPrice(e.target.value)}
-                  placeholder="15000"
+                  placeholder="Ծառայության գինը"
                 />
               </div>
               <div className="modal-actions">
