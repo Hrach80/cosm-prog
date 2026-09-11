@@ -451,8 +451,8 @@ export default function App() {
                       </div>
                     </>
                   ) : (
-                    <div style={{ color: '#94a3b8', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Plus size={14} /> Ազատ է (սեղմեք գրանցելու համար)
+                    <div style={{ color: '#94a3b8', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Plus size={14} /> Ազատ է (Գրանցել)
                     </div>
                   )}
                 </div>
