@@ -1,21 +1,30 @@
 /* Ընդհանուր մոբայլ կոնտեյներ - Glassmorphism և Նեոմորֆիկ խառը ոճ */
 .mobile-container {
   width: 100%;
-  max-width: 450px; /* Փոխարինել ենք 80vh-ից, որ հեռախոսի վրա լայնությունը չգերազանցի էկրանը */
-  margin: 20px auto;
-  min-height: 85vh;
-  border-radius: 32px;
+  max-width: 100%;
+  /* Հեռացնում ենք սահմանափակումը, որ լցնի ամբողջ լայնքը */
+  margin: 0;
+  /* Հեռացնում ենք վերևի և ներքևի մարջինները */
+  min-height: 100vh;
+  /* Զբաղեցնում է էկրանի ողջ բարձրությունը */
+  height: 100vh;
+  border-radius: 0;
+  /* Հեռախոսի վրա ամբողջ էկրանով լինելու համար անկյունները ուղղում ենք (ցանկության դեպքում կարող եք թողնել, բայց 0-ն ավելի նատուրալ է նայվում) */
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: none;
+  /* Ամբողջ էկրանով լինելիս ստվերն այլևս պետք չէ */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: none;
+  /* Եզրագիծը հանում ենք, քանի որ ամբողջ էկրանն է */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
-  overflow-x: hidden; /* Արգելափակում է ցանկացած հորիզոնական շարժ կամ սքրոլ */
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Եթե բովանդակությունը շատ լինի, ուղղահայաց կսքրոլվի ներսում */
 }
 
 /* Համոզվեք նաև, որ body-ն կամ html-ը չունեն հորիզոնական սքրոլ */
