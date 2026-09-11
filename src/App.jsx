@@ -67,7 +67,12 @@ export default function App() {
   }, [session]);
 
   const fetchAppointments = async () => {
-    const { data, error } = await supabase.from('appointments').select('*');
+    if (!session) return;
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('user_id', session.user.id);
+
     if (error) {
       console.error('Սխալ տվյալներ ստանալիս:', error);
     } else {
@@ -95,9 +100,9 @@ export default function App() {
   };
 
   const workingHours = [
-    '10:00', '11:00', '12:00', '13:00', '14:00',
+    '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00',
     '15:00', '16:00', '17:00', '18:00', '19:00',
-    '20:00', '21:00', '22:00'
+    '20:00', '21:00', '22:00', '23:00'
   ];
 
   const monthsList = [
@@ -144,7 +149,11 @@ export default function App() {
   });
 
   const getAppointmentsCountForDate = (dateStr) => {
-    return appointments.filter(app => app.date === dateStr).length;
+    return appointments.filter(app => {
+      if (!app.date) return false;
+      const appDate = String(app.date).substring(0, 10);
+      return appDate === dateStr;
+    }).length;
   };
 
   const handleDayClick = (dateStr) => {
@@ -169,7 +178,7 @@ export default function App() {
     e.preventDefault();
 
     const newRecord = {
-      user_id: session.user.id, // Կապում ենք տվյալը հենց մուտք գործած օգտատիրոջ հետ
+      user_id: session.user.id,
       date: selectedDate,
       time: `${startTime} - ${endTime}`,
       name: clientName,
@@ -204,14 +213,22 @@ export default function App() {
   };
 
   const monthlyRevenue = appointments
-    .filter(app => app.date && app.date.startsWith(`${selectedYear}-${selectedMonth}`))
+    .filter(app => {
+      if (!app.date) return false;
+      const appDate = String(app.date).substring(0, 10);
+      return appDate.startsWith(`${selectedYear}-${selectedMonth}`);
+    })
     .reduce((sum, app) => sum + Number(app.price || 0), 0);
 
   const yearlyRevenue = appointments
-    .filter(app => app.date && app.date.startsWith(`${selectedYear}`))
+    .filter(app => {
+      if (!app.date) return false;
+      const appDate = String(app.date).substring(0, 10);
+      return appDate.startsWith(`${selectedYear}`);
+    })
     .reduce((sum, app) => sum + Number(app.price || 0), 0);
 
-  // Եթե օգտատերը մուտք չի գործել, ցույց ենք տալիս Մուտքի/Գրանցման էջը՝ նեոմորֆիկ ոճերով
+  // Եթե օգտատերը մուտք չի գործել
   if (!session) {
     return (
       <div
@@ -285,7 +302,7 @@ export default function App() {
     );
   }
 
-  // Եթե մուտք է գործել, ցույց ենք տալիս հիմնական օրացույցը
+  // Հիմնական օրացույց
   return (
     <div
       className="mobile-container"
@@ -297,7 +314,6 @@ export default function App() {
         color: '#f8fafc'
       }}
     >
-      {/* Վերնագիր և Նավիգացիա */}
       <header className="app-header">
         {currentView === 'day' ? (
           <>
@@ -371,9 +387,18 @@ export default function App() {
       {currentView === 'day' && (
         <div className="day-timeline">
           {workingHours.map((hour) => {
-            const appointment = appointments.find(
-              app => app.date === selectedDate && app.time && app.time.startsWith(hour.substring(0, 2))
-            );
+            const appointment = appointments.find(app => {
+              if (!app.date) return false;
+              const appDate = String(app.date).substring(0, 10);
+              const isSameDate = appDate === selectedDate;
+
+              const matchesTime = app.time && (
+                app.time.startsWith(hour) ||
+                app.time.startsWith(hour.substring(0, 2))
+              );
+
+              return isSameDate && matchesTime;
+            });
 
             return (
               <div key={hour} className="time-slot-row">
