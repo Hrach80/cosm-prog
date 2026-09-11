@@ -1,8 +1,7 @@
 /* Ընդհանուր մոբայլ կոնտեյներ - Glassmorphism և Նեոմորֆիկ խառը ոճ */
 .mobile-container {
   width: 100%;
-  max-width: 450px;
-  /* Փոխարինել ենք 80vh-ից, որ հեռախոսի վրա լայնությունը չգերազանցի էկրանը */
+  max-width: 450px; /* Փոխարինել ենք 80vh-ից, որ հեռախոսի վրա լայնությունը չգերազանցի էկրանը */
   margin: 20px auto;
   min-height: 85vh;
   border-radius: 32px;
@@ -16,8 +15,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
-  overflow-x: hidden;
-  /* Արգելափակում է ցանկացած հորիզոնական շարժ կամ սքրոլ */
+  overflow-x: hidden; /* Արգելափակում է ցանկացած հորիզոնական շարժ կամ սքրոլ */
 }
 
 /* Համոզվեք նաև, որ body-ն կամ html-ը չունեն հորիզոնական սքրոլ */
@@ -99,8 +97,8 @@ body {
 
 .days-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
 }
 
 .calendar-day-cell {
@@ -116,7 +114,7 @@ body {
   position: relative;
   transition: all 0.2s ease;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   color: #f8fafc;
 }
 
