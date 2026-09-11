@@ -403,7 +403,7 @@ export default function App() {
             return (
               <div key={hour} className="time-slot-row">
                 <div className="slot-time" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#cbd5e1' }}>
-                  <Clock size={12} color={currentTheme.accent} /> {hour}
+                  <Clock size={20} color={currentTheme.accent} /> {hour}
                 </div>
                 <div
                   className={`slot-content ${appointment ? 'booked' : 'free-slot'}`}

@@ -152,8 +152,9 @@ body {
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
-  max-height: 54vh;
+  max-height: 95vh;
   padding-right: 4px;
+
 }
 
 .day-timeline::-webkit-scrollbar {
@@ -172,9 +173,9 @@ body {
 }
 
 .slot-time {
-  font-size: 0.95rem;
+  font-size: 1.4rem;
   font-weight: 600;
-  width: 50px;
+  width: 80px;
   text-align: right;
 }
 
