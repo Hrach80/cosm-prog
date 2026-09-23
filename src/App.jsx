@@ -387,17 +387,23 @@ export default function App() {
       {currentView === 'day' && (
         <div className="day-timeline">
           {workingHours.map((hour) => {
+            // Գտնում ենք, թե արդյոք տվյալ ժամը ընկած է որևէ գրանցված միջակայքում
             const appointment = appointments.find(app => {
               if (!app.date) return false;
               const appDate = String(app.date).substring(0, 10);
-              const isSameDate = appDate === selectedDate;
+              if (appDate !== selectedDate) return false;
+              if (!app.time) return false;
 
-              const matchesTime = app.time && (
-                app.time.startsWith(hour) ||
-                app.time.startsWith(hour.substring(0, 2))
-              );
+              // Բաժանում ենք գրանցման ժամանակը սկզբի և ավարտի (օր. "10:00 - 14:00")
+              const parts = app.time.split('-').map(p => p.trim());
+              if (parts.length === 2) {
+                const startTimeOnly = parts[0].substring(0, 5);
+                const endTimeOnly = parts[1].substring(0, 5);
+                // Ստուգում ենք՝ արդյոք ընթացիկ ժամը մտնում է այդ միջակայքի մեջ
+                return hour >= startTimeOnly && hour < endTimeOnly;
+              }
 
-              return isSameDate && matchesTime;
+              return app.time.startsWith(hour) || app.time.startsWith(hour.substring(0, 2));
             });
 
             return (
