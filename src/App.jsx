@@ -195,7 +195,9 @@ export default function App() {
     } else {
       await fetchAppointments();
       setIsModalOpen(false);
-      window.location.href = `tel:${clientPhone}`;
+      if (clientPhone) {
+        window.location.href = `tel:${clientPhone}`;
+      }
     }
   };
 
@@ -387,19 +389,16 @@ export default function App() {
       {currentView === 'day' && (
         <div className="day-timeline">
           {workingHours.map((hour) => {
-            // Գտնում ենք, թե արդյոք տվյալ ժամը ընկած է որևէ գրանցված միջակայքում
             const appointment = appointments.find(app => {
               if (!app.date) return false;
               const appDate = String(app.date).substring(0, 10);
               if (appDate !== selectedDate) return false;
               if (!app.time) return false;
 
-              // Բաժանում ենք գրանցման ժամանակը սկզբի և ավարտի (օր. "10:00 - 14:00")
               const parts = app.time.split('-').map(p => p.trim());
               if (parts.length === 2) {
                 const startTimeOnly = parts[0].substring(0, 5);
                 const endTimeOnly = parts[1].substring(0, 5);
-                // Ստուգում ենք՝ արդյոք ընթացիկ ժամը մտնում է այդ միջակայքի մեջ
                 return hour >= startTimeOnly && hour < endTimeOnly;
               }
 
@@ -423,9 +422,11 @@ export default function App() {
                           <User size={14} color={currentTheme.accent} /> {appointment.name}
                         </span>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                          <a href={`tel:${appointment.phone}`} className="call-link" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Phone size={12} /> {appointment.phone}
-                          </a>
+                          {appointment.phone && (
+                            <a href={`tel:${appointment.phone}`} className="call-link" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Phone size={12} /> {appointment.phone}
+                            </a>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -512,7 +513,6 @@ export default function App() {
                 <label>Հեռախոսահամար</label>
                 <input
                   type="text"
-                  required
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
                   placeholder="+374..."
