@@ -22,15 +22,14 @@ import summerImg from './assets/summer.jpg';
 import autumnImg from './assets/autumn.jpg';
 
 export default function App() {
-  // Օգտատիրոջ վիճակը (Session)
   const [session, setSession] = useState(null);
-  const [isSignUp, setIsSignUp] = useState(false); // false = Մուտք, true = Գրանցում
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Գաղտնաբառի տեսանելիության state
+  const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  const [currentView, setCurrentView] = useState('month'); // 'month' | 'day'
+  const [currentView, setCurrentView] = useState('month');
   const [selectedDate, setSelectedDate] = useState(null);
 
   const [selectedYear, setSelectedYear] = useState('2026');
@@ -46,7 +45,9 @@ export default function App() {
   const [clientService, setClientService] = useState('');
   const [clientPrice, setClientPrice] = useState('');
 
-  // Ստուգում ենք օգտատիրոջ մուտքը բացելիս
+  // Նոր state՝ կրկնակի սեղմումները կանխելու համար
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -59,7 +60,6 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Երբ օգտատերը մուտք է գործում, բեռնում ենք միայն իր գրանցումները
   useEffect(() => {
     if (session) {
       fetchAppointments();
@@ -80,7 +80,6 @@ export default function App() {
     }
   };
 
-  // Մուտք կամ Գրանցում համակարգ
   const handleAuth = async (e) => {
     e.preventDefault();
     setAuthError('');
@@ -176,18 +175,23 @@ export default function App() {
 
   const handleSaveAppointment = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // Եթե արդեն ուղարկվում է, կանխել կրկնակի սեղմումը
+
+    setIsSubmitting(true);
 
     const newRecord = {
       user_id: session.user.id,
       date: selectedDate,
       time: `${startTime} - ${endTime}`,
       name: clientName,
-      phone: clientPhone,
+      phone: clientPhone ? clientPhone : 'EMPTY',
       service: clientService,
       price: Number(clientPrice),
     };
 
     const { error } = await supabase.from('appointments').insert([newRecord]);
+
+    setIsSubmitting(false);
 
     if (error) {
       console.error('Սխալ գրանցումը պահպանելիս:', error);
@@ -195,7 +199,7 @@ export default function App() {
     } else {
       await fetchAppointments();
       setIsModalOpen(false);
-      if (clientPhone) {
+      if (clientPhone && clientPhone !== 'EMPTY') {
         window.location.href = `tel:${clientPhone}`;
       }
     }
@@ -230,7 +234,6 @@ export default function App() {
     })
     .reduce((sum, app) => sum + Number(app.price || 0), 0);
 
-  // Եթե օգտատերը մուտք չի գործել
   if (!session) {
     return (
       <div
@@ -304,7 +307,6 @@ export default function App() {
     );
   }
 
-  // Հիմնական օրացույց
   return (
     <div
       className="mobile-container"
@@ -360,7 +362,6 @@ export default function App() {
         )}
       </header>
 
-      {/* 1. Ամսվա տեսք */}
       {currentView === 'month' && (
         <div className="month-grid-container">
           <div className="weekdays-header">
@@ -385,7 +386,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. Օրվա ժամային տեսք */}
       {currentView === 'day' && (
         <div className="day-timeline">
           {workingHours.map((hour) => {
@@ -422,7 +422,7 @@ export default function App() {
                           <User size={14} color={currentTheme.accent} /> {appointment.name}
                         </span>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                          {appointment.phone && (
+                          {appointment.phone && appointment.phone !== 'EMPTY' && (
                             <a href={`tel:${appointment.phone}`} className="call-link" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <Phone size={12} /> {appointment.phone}
                             </a>
@@ -469,7 +469,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Մոդալ պատուհան */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-box">
@@ -510,7 +509,7 @@ export default function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Հեռախոսահամար</label>
+                <label>Հեռախոսահամար (Կամընտիր)</label>
                 <input
                   type="text"
                   value={clientPhone}
@@ -540,14 +539,20 @@ export default function App() {
               </div>
               <div className="modal-actions">
                 <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>Չեղարկել</button>
-                <button type="submit" className="save-btn" style={{ background: currentTheme.accent, color: '#0f172a' }}>Պահպանել</button>
+                <button
+                  type="submit"
+                  className="save-btn"
+                  disabled={isSubmitting}
+                  style={{ background: currentTheme.accent, color: '#0f172a', opacity: isSubmitting ? 0.7 : 1 }}
+                >
+                  {isSubmitting ? 'Պահպանվում է...' : 'Պահպանել'}
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Ներքևի հատված՝ Ամսական և Տարեկան եկամուտների ցուցիչով */}
       <footer className="financial-footer">
         <div className="finance-item">
           <span className="finance-label" style={{ color: '#94a3b8' }}>Ամսվա վաստակ</span>
