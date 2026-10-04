@@ -446,11 +446,5 @@ body {
   margin-bottom: 6px;
   text-align: center;
   font-weight: 700;
-}
-
-.auth-card .modal-subtitle {
-  font-size: 0.82rem;
-  color: #94a3b8;
-  text-align: center;
-  margin-bottom: 22px;
+  color: #f8fafc;
 }

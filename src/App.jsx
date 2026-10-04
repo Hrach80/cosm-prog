@@ -11,7 +11,8 @@ import {
   FileText,
   LogOut,
   Eye,
-  EyeOff
+  EyeOff,
+  Edit2
 } from 'lucide-react';
 import './App.css';
 
@@ -32,12 +33,18 @@ export default function App() {
   const [currentView, setCurrentView] = useState('month');
   const [selectedDate, setSelectedDate] = useState(null);
 
-  const [selectedYear, setSelectedYear] = useState('2026');
-  const [selectedMonth, setSelectedMonth] = useState('09');
+  // Ստանում ենք ընթացիկ տարին և ամիսը որպես սկզբնական արժեք
+  const now = new Date();
+  const currentSystemYear = String(now.getFullYear());
+  const currentSystemMonth = String(now.getMonth() + 1).padStart(2, '0');
+
+  const [selectedYear, setSelectedYear] = useState(currentSystemYear);
+  const [selectedMonth, setSelectedMonth] = useState(currentSystemMonth);
 
   const [appointments, setAppointments] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAppointmentId, setEditingAppointmentId] = useState(null); // Խմբագրվող գրանցման ID-ն
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [clientName, setClientName] = useState('');
@@ -45,7 +52,6 @@ export default function App() {
   const [clientService, setClientService] = useState('');
   const [clientPrice, setClientPrice] = useState('');
 
-  // Նոր state՝ կրկնակի սեղմումները կանխելու համար
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -138,14 +144,26 @@ export default function App() {
   const currentYearNum = new Date().getFullYear();
   const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
 
-  const daysInMonth = Array.from({ length: 31 }, (_, i) => {
-    const dayNum = i + 1;
-    const formattedDay = dayNum < 10 ? `0${dayNum}` : `${dayNum}`;
-    return {
+  const firstDayIndex = new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).getDay();
+
+  const getDaysInMonth = (year, month) => {
+    return new Date(parseInt(year), parseInt(month), 0).getDate();
+  };
+  const totalDaysCount = getDaysInMonth(selectedYear, selectedMonth);
+
+  const daysInMonth = [];
+  for (let i = 0; i < firstDayIndex; i++) {
+    daysInMonth.push({ empty: true, id: `empty-${i}` });
+  }
+
+  for (let i = 1; i <= totalDaysCount; i++) {
+    const formattedDay = i < 10 ? `0${i}` : `${i}`;
+    daysInMonth.push({
+      empty: false,
       date: `${selectedYear}-${selectedMonth}-${formattedDay}`,
-      dayNum: dayNum,
-    };
-  });
+      dayNum: i,
+    });
+  }
 
   const getAppointmentsCountForDate = (dateStr) => {
     return appointments.filter(app => {
@@ -161,6 +179,7 @@ export default function App() {
   };
 
   const handleFreeSlotClick = (hour) => {
+    setEditingAppointmentId(null); // Նոր գրանցում
     setStartTime(hour);
     const hourNum = parseInt(hour.substring(0, 2), 10);
     const endHourStr = `${hourNum + 1 < 10 ? '0' : ''}${hourNum + 1}:00`;
@@ -173,23 +192,56 @@ export default function App() {
     setIsModalOpen(true);
   };
 
+  const handleEditAppointmentClick = (appointment, e) => {
+    e.stopPropagation();
+    setEditingAppointmentId(appointment.id);
+
+    // Եթե ժամանակը պահպանված է որպես "08:00 - 09:00", բաժանում ենք սկզբի և ավարտի
+    if (appointment.time && appointment.time.includes('-')) {
+      const parts = appointment.time.split('-').map(p => p.trim());
+      setStartTime(parts[0].substring(0, 5));
+      setEndTime(parts[1].substring(0, 5));
+    } else {
+      setStartTime('09:00');
+      setEndTime('10:00');
+    }
+
+    setClientName(appointment.name || '');
+    setClientPhone(appointment.phone === 'EMPTY' ? '' : (appointment.phone || ''));
+    setClientService(appointment.service || '');
+    setClientPrice(appointment.price !== null && appointment.price !== undefined ? String(appointment.price) : '');
+    setIsModalOpen(true);
+  };
+
   const handleSaveAppointment = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // Եթե արդեն ուղարկվում է, կանխել կրկնակի սեղմումը
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
 
-    const newRecord = {
+    const recordData = {
       user_id: session.user.id,
       date: selectedDate,
       time: `${startTime} - ${endTime}`,
       name: clientName,
       phone: clientPhone ? clientPhone : 'EMPTY',
       service: clientService,
-      price: Number(clientPrice),
+      price: clientPrice !== '' ? Number(clientPrice) : 0, // Գինը կամընտիր է, եթե դատարկ է՝ 0
     };
 
-    const { error } = await supabase.from('appointments').insert([newRecord]);
+    let error;
+    if (editingAppointmentId) {
+      // Խմբագրում
+      const res = await supabase
+        .from('appointments')
+        .update(recordData)
+        .eq('id', editingAppointmentId);
+      error = res.error;
+    } else {
+      // Նոր գրանցում
+      const res = await supabase.from('appointments').insert([recordData]);
+      error = res.error;
+    }
 
     setIsSubmitting(false);
 
@@ -199,13 +251,12 @@ export default function App() {
     } else {
       await fetchAppointments();
       setIsModalOpen(false);
-      if (clientPhone && clientPhone !== 'EMPTY') {
-        window.location.href = `tel:${clientPhone}`;
-      }
+      setEditingAppointmentId(null);
     }
   };
 
-  const handleDeleteAppointment = async (id) => {
+  const handleDeleteAppointment = async (id, e) => {
+    if (e) e.stopPropagation();
     if (!window.confirm('Վստա՞հ եք, որ ցանկանում եք ջնջել այս գրանցումը:')) return;
 
     const { error } = await supabase.from('appointments').delete().eq('id', id);
@@ -215,6 +266,7 @@ export default function App() {
       alert('Չհաջողվեց ջնջել գրանցումը: ' + error.message);
     } else {
       await fetchAppointments();
+      setIsModalOpen(false);
     }
   };
 
@@ -369,6 +421,10 @@ export default function App() {
           </div>
           <div className="days-grid">
             {daysInMonth.map((d) => {
+              if (d.empty) {
+                return <div key={d.id} className="calendar-day-cell empty-cell" style={{ opacity: 0, pointerEvents: 'none' }} />;
+              }
+
               const count = getAppointmentsCountForDate(d.date);
               const hasApp = count > 0;
               return (
@@ -428,10 +484,26 @@ export default function App() {
                             </a>
                           )}
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteAppointment(appointment.id);
+                            onClick={(e) => handleEditAppointmentClick(appointment, e)}
+                            style={{
+                              background: 'rgba(56, 189, 248, 0.2)',
+                              color: '#38bdf8',
+                              border: 'none',
+                              padding: '5px 8px',
+                              borderRadius: '10px',
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}
+                            title="Խմբագրել"
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                          <button
+                            onClick={(e) => handleDeleteAppointment(appointment.id, e)}
                             style={{
                               background: 'rgba(255, 59, 48, 0.2)',
                               color: '#ff453a',
@@ -446,7 +518,7 @@ export default function App() {
                               gap: '4px'
                             }}
                           >
-                            <Trash2 size={12} /> Ջնջել
+                            <Trash2 size={12} />
                           </button>
                         </div>
                       </div>
@@ -454,7 +526,7 @@ export default function App() {
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <FileText size={12} /> {appointment.service} ({appointment.time})
                         </span>
-                        <span className="service-price" style={{ color: currentTheme.accent }}>{appointment.price} ֏</span>
+                        <span className="service-price" style={{ color: currentTheme.accent }}>{appointment.price || 0} ֏</span>
                       </div>
                     </>
                   ) : (
@@ -473,7 +545,7 @@ export default function App() {
         <div className="modal-overlay">
           <div className="modal-box">
             <div className="modal-header-indicator"></div>
-            <h3>Գրանցում՝ {selectedDate}</h3>
+            <h3>{editingAppointmentId ? 'Խմբագրել գրանցումը' : `Գրանցում՝ ${selectedDate}`}</h3>
             <p className="modal-subtitle">Նշեք ժամային միջակայքը և տվյալները</p>
 
             <form onSubmit={handleSaveAppointment}>
@@ -528,22 +600,26 @@ export default function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Գին (֏)</label>
+                <label>Գին (֏) (Կամընտիր)</label>
                 <input
                   type="number"
-                  required
                   value={clientPrice}
                   onChange={(e) => setClientPrice(e.target.value)}
                   placeholder="Ծառայության գինը"
                 />
               </div>
-              <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>Չեղարկել</button>
+              <div className="modal-actions" style={{ display: 'flex', gap: '8px' }}>
+                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)} style={{ flex: 1 }}>Չեղարկել</button>
+                {editingAppointmentId && (
+                  <button type="button" onClick={(e) => handleDeleteAppointment(editingAppointmentId, e)} style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
+                    <Trash2 size={16} />
+                  </button>
+                )}
                 <button
                   type="submit"
                   className="save-btn"
                   disabled={isSubmitting}
-                  style={{ background: currentTheme.accent, color: '#0f172a', opacity: isSubmitting ? 0.7 : 1 }}
+                  style={{ flex: 1, background: currentTheme.accent, color: '#0f172a', opacity: isSubmitting ? 0.7 : 1 }}
                 >
                   {isSubmitting ? 'Պահպանվում է...' : 'Պահպանել'}
                 </button>
