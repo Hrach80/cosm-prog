@@ -33,10 +33,11 @@ export default function App() {
   const [currentView, setCurrentView] = useState('month');
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Ստանում ենք ընթացիկ տարին և ամիսը որպես սկզբնական արժեք
+  // Ստանում ենք ընթացիկ տարին, ամիսը և օրը
   const now = new Date();
   const currentSystemYear = String(now.getFullYear());
   const currentSystemMonth = String(now.getMonth() + 1).padStart(2, '0');
+  const currentSystemDayFormatted = `${currentSystemYear}-${currentSystemMonth}-${String(now.getDate()).padStart(2, '0')}`;
 
   const [selectedYear, setSelectedYear] = useState(currentSystemYear);
   const [selectedMonth, setSelectedMonth] = useState(currentSystemMonth);
@@ -44,7 +45,7 @@ export default function App() {
   const [appointments, setAppointments] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingAppointmentId, setEditingAppointmentId] = useState(null); // Խմբագրվող գրանցման ID-ն
+  const [editingAppointmentId, setEditingAppointmentId] = useState(null);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [clientName, setClientName] = useState('');
@@ -179,7 +180,7 @@ export default function App() {
   };
 
   const handleFreeSlotClick = (hour) => {
-    setEditingAppointmentId(null); // Նոր գրանցում
+    setEditingAppointmentId(null);
     setStartTime(hour);
     const hourNum = parseInt(hour.substring(0, 2), 10);
     const endHourStr = `${hourNum + 1 < 10 ? '0' : ''}${hourNum + 1}:00`;
@@ -196,7 +197,6 @@ export default function App() {
     e.stopPropagation();
     setEditingAppointmentId(appointment.id);
 
-    // Եթե ժամանակը պահպանված է որպես "08:00 - 09:00", բաժանում ենք սկզբի և ավարտի
     if (appointment.time && appointment.time.includes('-')) {
       const parts = appointment.time.split('-').map(p => p.trim());
       setStartTime(parts[0].substring(0, 5));
@@ -226,19 +226,17 @@ export default function App() {
       name: clientName,
       phone: clientPhone ? clientPhone : 'EMPTY',
       service: clientService,
-      price: clientPrice !== '' ? Number(clientPrice) : 0, // Գինը կամընտիր է, եթե դատարկ է՝ 0
+      price: clientPrice !== '' ? Number(clientPrice) : 0,
     };
 
     let error;
     if (editingAppointmentId) {
-      // Խմբագրում
       const res = await supabase
         .from('appointments')
         .update(recordData)
         .eq('id', editingAppointmentId);
       error = res.error;
     } else {
-      // Նոր գրանցում
       const res = await supabase.from('appointments').insert([recordData]);
       error = res.error;
     }
@@ -425,13 +423,16 @@ export default function App() {
                 return <div key={d.id} className="calendar-day-cell empty-cell" style={{ opacity: 0, pointerEvents: 'none' }} />;
               }
 
+              const isCurrentDay = d.date === currentSystemDayFormatted;
               const count = getAppointmentsCountForDate(d.date);
               const hasApp = count > 0;
+
               return (
                 <div
                   key={d.date}
-                  className={`calendar-day-cell ${hasApp ? 'has-appointment' : ''}`}
+                  className={`calendar-day-cell ${hasApp ? 'has-appointment' : ''} ${isCurrentDay ? 'current-day' : ''}`}
                   onClick={() => handleDayClick(d.date)}
+                  style={isCurrentDay ? { borderColor: currentTheme.accent, boxShadow: `0 0 10px ${currentTheme.accent}` } : {}}
                 >
                   <span>{d.dayNum}</span>
                   {hasApp && <div className="appointment-badge" style={{ background: currentTheme.accent, color: '#0f172a' }}>{count}</div>}
