@@ -30,7 +30,7 @@ export default function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  const [currentView, setCurrentView] = useState('month');
+  const [currentView, setCurrentView] = useState('year'); // Սկզբնական տեսքը՝ 'year'
   const [selectedDate, setSelectedDate] = useState(null);
 
   // Ստանում ենք ընթացիկ տարին, ամիսը և օրը
@@ -145,26 +145,28 @@ export default function App() {
   const currentYearNum = new Date().getFullYear();
   const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
 
-  const firstDayIndex = new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).getDay();
+  const getMonthDaysArray = (yearStr, monthStr) => {
+    const y = parseInt(yearStr);
+    const m = parseInt(monthStr);
+    const firstDay = new Date(y, m - 1, 1).getDay();
+    const totalDays = new Date(y, m, 0).getDate();
 
-  const getDaysInMonth = (year, month) => {
-    return new Date(parseInt(year), parseInt(month), 0).getDate();
+    const arr = [];
+    for (let i = 0; i < firstDay; i++) {
+      arr.push({ empty: true, id: `empty-${m}-${i}` });
+    }
+    for (let i = 1; i <= totalDays; i++) {
+      const formattedDay = i < 10 ? `0${i}` : `${i}`;
+      arr.push({
+        empty: false,
+        date: `${yearStr}-${monthStr}-${formattedDay}`,
+        dayNum: i,
+      });
+    }
+    return arr;
   };
-  const totalDaysCount = getDaysInMonth(selectedYear, selectedMonth);
 
-  const daysInMonth = [];
-  for (let i = 0; i < firstDayIndex; i++) {
-    daysInMonth.push({ empty: true, id: `empty-${i}` });
-  }
-
-  for (let i = 1; i <= totalDaysCount; i++) {
-    const formattedDay = i < 10 ? `0${i}` : `${i}`;
-    daysInMonth.push({
-      empty: false,
-      date: `${selectedYear}-${selectedMonth}-${formattedDay}`,
-      dayNum: i,
-    });
-  }
+  const daysInMonth = getMonthDaysArray(selectedYear, selectedMonth);
 
   const getAppointmentsCountForDate = (dateStr) => {
     return appointments.filter(app => {
@@ -177,6 +179,11 @@ export default function App() {
   const handleDayClick = (dateStr) => {
     setSelectedDate(dateStr);
     setCurrentView('day');
+  };
+
+  const handleMonthCardClick = (monthValue) => {
+    setSelectedMonth(monthValue);
+    setCurrentView('month');
   };
 
   const handleFreeSlotClick = (hour) => {
@@ -381,8 +388,11 @@ export default function App() {
               <LogOut size={16} />
             </button>
           </>
-        ) : (
-          <div className="header-title-block" style={{ justifyContent: 'space-between' }}>
+        ) : currentView === 'month' ? (
+          <>
+            <button className="back-btn" onClick={() => setCurrentView('year')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ChevronLeft size={18} /> Տարի
+            </button>
             <div style={{ display: 'flex', gap: '8px' }}>
               <select
                 className="select-dropdown"
@@ -404,7 +414,22 @@ export default function App() {
                 ))}
               </select>
             </div>
-
+            <button className="back-btn" onClick={handleLogout} title="Ելք" style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', padding: '8px' }}>
+              <LogOut size={16} />
+            </button>
+          </>
+        ) : (
+          <div className="header-title-block" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 'bold', margin: 0, color: '#f8fafc' }}>{selectedYear}</h1>
+            <select
+              className="select-dropdown"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+            >
+              {yearsList.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
             <button className="back-btn" onClick={handleLogout} title="Ելք համակարգից" style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', padding: '8px' }}>
               <LogOut size={16} />
             </button>
@@ -412,6 +437,65 @@ export default function App() {
         )}
       </header>
 
+      {/* ՏԱՐԵԿԱՆ ՏԵՍՔ (3 ամիսը կողք կողքի ցանցով) */}
+      {currentView === 'year' && (
+        <div className="year-grid-container" style={{ overflowY: 'auto', flex: 1, paddingBottom: '10px' }}>
+          <div className="months-grid-3cols">
+            {monthsList.map(m => {
+              const isCurrentMonth = selectedYear === currentSystemYear && m.value === currentSystemMonth;
+              const mDays = getMonthDaysArray(selectedYear, m.value);
+
+              return (
+                <div
+                  key={m.value}
+                  onClick={() => handleMonthCardClick(m.value)}
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.65)',
+                    border: isCurrentMonth ? '2px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '12px',
+                    padding: '6px',
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(6px)',
+                    boxShadow: isCurrentMonth ? '0 0 12px rgba(56, 189, 248, 0.35)' : 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div style={{ fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px', textAlign: 'center', color: isCurrentMonth ? '#38bdf8' : '#f8fafc' }}>
+                    {m.name}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', fontSize: '0.5rem', color: '#94a3b8', marginBottom: '2px' }}>
+                    <span>Կ</span><span>Ե</span><span>Ե</span><span>Չ</span><span>Հ</span><span>Ո</span><span>Շ</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', textAlign: 'center', fontSize: '0.6rem' }}>
+                    {mDays.map((d, idx) => {
+                      if (d.empty) return <div key={`e-${idx}`} />;
+                      const isToday = d.date === currentSystemDayFormatted;
+                      return (
+                        <div
+                          key={d.date}
+                          style={{
+                            padding: '2px 0',
+                            borderRadius: '3px',
+                            background: isToday ? '#38bdf8' : 'transparent',
+                            color: isToday ? '#0f172a' : '#f8fafc',
+                            fontWeight: isToday ? 'bold' : 'normal'
+                          }}
+                        >
+                          {d.dayNum}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ԱՄՍՎԱ ՏԵՍՔ */}
       {currentView === 'month' && (
         <div className="month-grid-container">
           <div className="weekdays-header">
@@ -443,6 +527,7 @@ export default function App() {
         </div>
       )}
 
+      {/* ՕՐՎԱ ՏԵՍՔ */}
       {currentView === 'day' && (
         <div className="day-timeline">
           {workingHours.map((hour) => {

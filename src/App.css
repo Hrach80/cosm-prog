@@ -448,3 +448,28 @@ body {
   font-weight: 700;
   color: #f8fafc;
 }
+
+/* 3 սյունակով ամիսների դասավորությունը տարեկան տեսքի համար */
+.months-grid-3cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.year-grid-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 160px);
+  padding-right: 2px;
+}
+
+.year-grid-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.year-grid-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
