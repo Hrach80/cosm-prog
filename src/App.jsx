@@ -53,12 +53,16 @@ const translations = {
     startTime: 'Սկիզբ',
     endTime: 'Ավարտ',
     clientName: 'Հաճախորդի անուն',
+    clientNamePlaceholder: 'Օր. Հաճախորդի անուն',
     clientPhone: 'Հեռախոսահամար (Կամընտիր)',
     service: 'Ծառայություն',
+    servicePlaceholder: 'Օր. Ծառայության անվանում',
     price: 'Գին (֏) (Կամընտիր)',
+    pricePlaceholder: 'Ծառայության գինը',
     cancel: 'Չեղարկել',
     save: 'Պահպանել',
     saving: 'Պահպանվում է...',
+    deleteConfirm: 'Վստա՞հ եք, որ ցանկանում եք ջնջել այս գրանցումը:',
     weekDays: ['Երկ', 'Երք', 'Չոր', 'Հին', 'Ուրբ', 'Շաբ', 'Կիր'],
     weekDaysShort: ['Ե', 'Ե', 'Չ', 'Հ', 'Ո', 'Շ', 'Կ'],
     monthsList: [
@@ -104,12 +108,16 @@ const translations = {
     startTime: 'Начало',
     endTime: 'Конец',
     clientName: 'Имя клиента',
+    clientNamePlaceholder: 'Имя клиента',
     clientPhone: 'Номер телефона (Необязательно)',
     service: 'Услуга',
+    servicePlaceholder: 'Название услуги',
     price: 'Цена (֏) (Необязательно)',
+    pricePlaceholder: 'Цена услуги',
     cancel: 'Отмена',
     save: 'Сохранить',
     saving: 'Сохранение...',
+    deleteConfirm: 'Вы уверены, что хотите удалить эту запись?',
     weekDays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
     weekDaysShort: ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'],
     monthsList: [
@@ -155,12 +163,16 @@ const translations = {
     startTime: 'Start',
     endTime: 'End',
     clientName: 'Client Name',
+    clientNamePlaceholder: 'Client name',
     clientPhone: 'Phone Number (Optional)',
     service: 'Service',
+    servicePlaceholder: 'Service name',
     price: 'Price (֏) (Optional)',
+    pricePlaceholder: 'Service price',
     cancel: 'Cancel',
     save: 'Save',
     saving: 'Saving...',
+    deleteConfirm: 'Are you sure you want to delete this appointment?',
     weekDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     weekDaysShort: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
     monthsList: [
@@ -180,7 +192,6 @@ const translations = {
   }
 };
 
-// Հայաստանի և միջազգային ոչ աշխատանքային օրերի ցանկ (MM-DD)
 const holidays = [
   '01-01', '01-02', '01-03', '01-04', '01-05', '01-06', '01-28',
   '03-08', '04-24', '05-01', '05-09', '05-28', '07-05', '09-21', '12-31'
@@ -429,7 +440,7 @@ export default function App() {
 
   const handleDeleteAppointment = async (id, e) => {
     if (e) e.stopPropagation();
-    if (!window.confirm('Վստա՞հ եք, որ ցանկանում եք ջնջել այս գրանցումը:')) return;
+    if (!window.confirm(t.deleteConfirm)) return;
 
     const { error } = await supabase.from('appointments').delete().eq('id', id);
 
@@ -919,7 +930,7 @@ export default function App() {
                   required
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Օր. Հաճախորդի անուն"
+                  placeholder={t.clientNamePlaceholder}
                 />
               </div>
               <div className="form-group">
@@ -938,7 +949,7 @@ export default function App() {
                   required
                   value={clientService}
                   onChange={(e) => setClientService(e.target.value)}
-                  placeholder="Օր. Ծառայության անվանում"
+                  placeholder={t.servicePlaceholder}
                 />
               </div>
               <div className="form-group">
@@ -947,7 +958,7 @@ export default function App() {
                   type="number"
                   value={clientPrice}
                   onChange={(e) => setClientPrice(e.target.value)}
-                  placeholder="Ծառայության գինը"
+                  placeholder={t.pricePlaceholder}
                 />
               </div>
               <div className="modal-actions" style={{ display: 'flex', gap: '8px' }}>
