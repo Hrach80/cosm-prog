@@ -180,24 +180,11 @@ const translations = {
   }
 };
 
-// Հայաստանի և միջազգային ոչ աշխատանքային (տոնական) օրեր (MM-DD ձևաչափով)
-const holidays = {
-  '01-01': 'Ամանոր (New Year)',
-  '01-02': 'Ամանոր (New Year)',
-  '01-03': 'Ամանոր',
-  '01-04': 'Ամանոր',
-  '01-05': 'Ամանոր',
-  '01-06': 'Սուրբ Ծնունդ (Christmas)',
-  '01-28': 'Բանակի օր (Army Day)',
-  '03-08': 'Կանանց տոն (Women\'s Day)',
-  '04-24': 'Ցեղասպանության հիշատակի օր (Genocide Remembrance Day)',
-  '05-01': 'Աշխատանքի օր (Labor Day)',
-  '05-09': 'Հաղթանակի և խաղաղության տոն (Victory and Peace Day)',
-  '05-28': 'Հանրապետության օր (Republic Day)',
-  '07-05': 'Սահմանադրության օր (Constitution Day)',
-  '09-21': 'Անկախության օր (Independence Day)',
-  '12-31': 'Ամանոր (New Year Eve)'
-};
+// Հայաստանի և միջազգային ոչ աշխատանքային օրերի ցանկ (MM-DD)
+const holidays = [
+  '01-01', '01-02', '01-03', '01-04', '01-05', '01-06', '01-28',
+  '03-08', '04-24', '05-01', '05-09', '05-28', '07-05', '09-21', '12-31'
+];
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -207,10 +194,10 @@ export default function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  const [lang, setLang] = useState('am'); // Լեզու՝ 'am', 'ru', 'en'
+  const [lang, setLang] = useState('am');
   const t = translations[lang];
 
-  const [currentView, setCurrentView] = useState('year'); // 'year', 'month', 'day'
+  const [currentView, setCurrentView] = useState('year');
   const [selectedDate, setSelectedDate] = useState(null);
 
   const now = new Date();
@@ -309,14 +296,11 @@ export default function App() {
   const currentYearNum = new Date().getFullYear();
   const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
 
-  // Օրերի գեներացում՝ սկսվող Երկուշաբթի օրվանից (index 1)
   const getMonthDaysArray = (yearStr, monthStr) => {
     const y = parseInt(yearStr);
     const m = parseInt(monthStr);
 
-    // JS getDay(): 0-Կիրակի, 1-Երկուշաբթի, ... 6-Շաբաթ
     const jsFirstDay = new Date(y, m - 1, 1).getDay();
-    // Վերափոխում ենք, որ Երկուշաբթին լինի 0-րդ ինդեքսը (Կիրակին՝ 6)
     const firstDay = jsFirstDay === 0 ? 6 : jsFirstDay - 1;
 
     const totalDays = new Date(y, m, 0).getDate();
@@ -331,10 +315,10 @@ export default function App() {
       const dateStr = `${yearStr}-${monthFormatted}-${formattedDay}`;
       const mmdd = `${monthFormatted}-${formattedDay}`;
 
-      const dayOfWeek = new Date(y, m - 1, i).getDay(); // 0: Կիրակի, 6: Շաբաթ
+      const dayOfWeek = new Date(y, m - 1, i).getDay();
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       const isSunday = dayOfWeek === 0;
-      const isHoliday = !!holidays[mmdd];
+      const isHoliday = holidays.includes(mmdd);
 
       arr.push({
         empty: false,
@@ -343,8 +327,7 @@ export default function App() {
         dayOfWeek,
         isWeekend,
         isSunday,
-        isHoliday,
-        holidayName: holidays[mmdd] || ''
+        isHoliday
       });
     }
     return arr;
@@ -487,7 +470,6 @@ export default function App() {
           position: 'relative'
         }}
       >
-        {/* Լեզվի փոխարկիչ մուտքի էկրանին */}
         <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Globe size={16} color="#38bdf8" />
           <select
@@ -711,7 +693,6 @@ export default function App() {
                       if (d.empty) return <div key={`e-${idx}`} />;
                       const isToday = d.date === currentSystemDayFormatted;
 
-                      // Գույնի որոշում տարեկան փոքրիկ օրացույցում
                       let dayColor = '#f8fafc';
                       if (isToday) dayColor = '#0f172a';
                       else if (d.isHoliday) dayColor = '#ff453a';
@@ -721,7 +702,6 @@ export default function App() {
                       return (
                         <div
                           key={d.date}
-                          title={d.holidayName || ''}
                           style={{
                             padding: '2px 0',
                             borderRadius: '3px',
@@ -762,7 +742,6 @@ export default function App() {
               const count = getAppointmentsCountForDate(d.date);
               const hasApp = count > 0;
 
-              // Ոճեր շաբաթ-կիրակի և տոների համար
               let cellBackground = 'rgba(15, 23, 42, 0.5)';
               let cellColor = '#f8fafc';
               let cellBorder = '1px solid rgba(255, 255, 255, 0.1)';
@@ -775,11 +754,9 @@ export default function App() {
                 cellBorder = '1px solid rgba(255, 69, 58, 0.4)';
                 cellColor = '#ff453a';
               } else if (d.isSunday) {
-                // Կիրակի (ավելի մուգ / վառ երանգ)
                 cellBackground = 'rgba(15, 23, 42, 0.85)';
                 cellColor = '#fca5a5';
               } else if (d.isWeekend) {
-                // Շաբաթ (թույլ երանգավորված)
                 cellBackground = 'rgba(30, 41, 59, 0.4)';
                 cellColor = '#cbd5e1';
               }
@@ -789,7 +766,6 @@ export default function App() {
                   key={d.date}
                   className={`calendar-day-cell ${hasApp ? 'has-appointment' : ''} ${isCurrentDay ? 'current-day' : ''}`}
                   onClick={() => handleDayClick(d.date)}
-                  title={d.holidayName ? `${d.dayNum} - ${d.holidayName}` : ''}
                   style={{
                     background: cellBackground,
                     border: cellBorder,
@@ -797,14 +773,7 @@ export default function App() {
                     boxShadow: isCurrentDay ? `0 0 10px ${currentTheme.accent}` : 'none'
                   }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                    <span style={{ fontWeight: isCurrentDay || d.isHoliday ? 'bold' : 'normal' }}>{d.dayNum}</span>
-                    {d.holidayName && (
-                      <span style={{ fontSize: '9px', color: '#ff453a', whiteCdspace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', lineHeight: '1' }}>
-                        {d.holidayName.split(' ')[0]}
-                      </span>
-                    )}
-                  </div>
+                  <span style={{ fontWeight: isCurrentDay || d.isHoliday ? 'bold' : 'normal' }}>{d.dayNum}</span>
                   {hasApp && <div className="appointment-badge" style={{ background: currentTheme.accent, color: '#0f172a' }}>{count}</div>}
                 </div>
               );
