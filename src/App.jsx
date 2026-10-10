@@ -63,6 +63,7 @@ const translations = {
     save: 'Պահպանել',
     saving: 'Պահպանվում է...',
     deleteConfirm: 'Վստա՞հ եք, որ ցանկանում եք ջնջել այս գրանցումը:',
+    chartTitle: 'Ամսական եկամուտների դինամիկան',
     weekDays: ['Երկ', 'Երք', 'Չոր', 'Հին', 'Ուրբ', 'Շաբ', 'Կիր'],
     weekDaysShort: ['Ե', 'Ե', 'Չ', 'Հ', 'Ո', 'Շ', 'Կ'],
     monthsList: [
@@ -118,6 +119,7 @@ const translations = {
     save: 'Сохранить',
     saving: 'Сохранение...',
     deleteConfirm: 'Вы уверены, что хотите удалить эту запись?',
+    chartTitle: 'Динамика месячных доходов',
     weekDays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
     weekDaysShort: ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'],
     monthsList: [
@@ -173,6 +175,7 @@ const translations = {
     save: 'Save',
     saving: 'Saving...',
     deleteConfirm: 'Are you sure you want to delete this appointment?',
+    chartTitle: 'Monthly Revenue Growth',
     weekDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     weekDaysShort: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
     monthsList: [
@@ -306,6 +309,27 @@ export default function App() {
   const currentTheme = monthThemes[selectedMonth] || monthThemes['09'];
   const currentYearNum = new Date().getFullYear();
   const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
+
+  // Ամսական վաստակի տվյալների հաշվարկ գրաֆիկի համար
+  const getMonthlyRevenueChartData = () => {
+    return t.monthsList.map(m => {
+      const monthTotal = appointments
+        .filter(app => {
+          if (!app.date) return false;
+          const appDate = String(app.date).substring(0, 10);
+          return appDate.startsWith(`${selectedYear}-${m.value}`);
+        })
+        .reduce((sum, app) => sum + Number(app.price || 0), 0);
+
+      return {
+        monthName: m.name.substring(0, 3),
+        revenue: monthTotal
+      };
+    });
+  };
+
+  const chartData = getMonthlyRevenueChartData();
+  const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1000);
 
   const getMonthDaysArray = (yearStr, monthStr) => {
     const y = parseInt(yearStr);
@@ -477,7 +501,7 @@ export default function App() {
           backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url(${winterImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          color: '#fcf8f8',
+          color: '#f8fafc',
           position: 'relative'
         }}
       >
@@ -529,7 +553,7 @@ export default function App() {
                     position: 'absolute',
                     right: '12px',
                     cursor: 'pointer',
-                    color: '#2d5793',
+                    color: '#94a3b8',
                     display: 'flex',
                     alignItems: 'center'
                   }}
@@ -668,7 +692,9 @@ export default function App() {
 
       {/* ՏԱՐԵԿԱՆ ՏԵՍՔ */}
       {currentView === 'year' && (
-        <div className="year-grid-container" style={{ overflowY: 'auto', flex: 1, paddingBottom: '10px' }}>
+        <div className="year-grid-container" style={{ overflowY: 'auto', flex: 1, paddingBottom: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+
+          {/* 1. Ամիսների ցանցը վերևում */}
           <div className="months-grid-3cols">
             {t.monthsList.map(m => {
               const isCurrentMonth = selectedYear === currentSystemYear && m.value === currentSystemMonth;
@@ -696,7 +722,7 @@ export default function App() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', fontSize: '0.5rem', color: '#94a3b8', marginBottom: '2px' }}>
                     {t.weekDaysShort.map((wd, i) => (
-                      <span key={i} style={{ color: i === 5 ? 'rgba(248, 250, 252, 0.6)' : i === 6 ? '#ff453a' : '#94a3b8' }}>{wd}</span>
+                      <span key={i} style={{ color: i === 5 || i === 6 ? '#ff453a' : '#94a3b8' }}>{wd}</span>
                     ))}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', textAlign: 'center', fontSize: '0.6rem' }}>
@@ -708,7 +734,7 @@ export default function App() {
                       if (isToday) dayColor = '#0f172a';
                       else if (d.isHoliday) dayColor = '#ff453a';
                       else if (d.isSunday) dayColor = '#fca5a5';
-                      else if (d.isWeekend) dayColor = '#94a3b8';
+                      else if (d.isWeekend) dayColor = '#cbd5e1';
 
                       return (
                         <div
@@ -730,6 +756,45 @@ export default function App() {
               );
             })}
           </div>
+
+          {/* 2. Ամսական վաստակի գրաֆիկը ներքևում (առանց 'կ' տառի) */}
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.65)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '16px',
+            padding: '10px 14px',
+            marginTop: '12px',
+            backdropFilter: 'blur(6px)'
+          }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px', color: '#38bdf8', textAlign: 'center' }}>
+              {t.chartTitle}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '90px', gap: '3px', paddingTop: '6px' }}>
+              {chartData.map((item, index) => {
+                const heightPercent = Math.round((item.revenue / maxRevenue) * 100);
+                return (
+                  <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
+                    <div style={{ fontSize: '7px', color: '#94a3b8', marginBottom: '2px', whiteSpace: 'nowrap' }}>
+                      {item.revenue > 0 ? (item.revenue >= 1000 ? `${Math.round(item.revenue / 1000)}` : item.revenue) : ''}
+                    </div>
+                    <div
+                      title={`${item.monthName}: ${item.revenue.toLocaleString()} ֏`}
+                      style={{
+                        width: '100%',
+                        maxWidth: '18px',
+                        height: `${Math.max(heightPercent, 6)}%`,
+                        background: item.revenue > 0 ? 'linear-gradient(to top, #38bdf8, #4ade80)' : 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '4px 4px 0 0',
+                        transition: 'height 0.4s ease'
+                      }}
+                    />
+                    <span style={{ fontSize: '8px', color: '#cbd5e1', marginTop: '3px' }}>{item.monthName}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
         </div>
       )}
 
@@ -754,7 +819,7 @@ export default function App() {
               const hasApp = count > 0;
 
               let cellBackground = 'rgba(15, 23, 42, 0.5)';
-              let cellColor = '#d0b3b3';
+              let cellColor = '#f8fafc';
               let cellBorder = '1px solid rgba(255, 255, 255, 0.1)';
 
               if (isCurrentDay) {
@@ -765,13 +830,11 @@ export default function App() {
                 cellBorder = '1px solid rgba(255, 69, 58, 0.4)';
                 cellColor = '#ff453a';
               } else if (d.dayOfWeek === 0) {
-                // Կիրակի (Ավելի մուգ կարմրավուն կիսաթափանցիկ ֆոն)
-                cellBackground = 'rgba(147, 233, 247, 0.25)';
-                cellColor = '#f80909';
+                cellBackground = 'rgba(255, 69, 58, 0.25)';
+                cellColor = '#fca5a5';
               } else if (d.dayOfWeek === 6) {
-                // Շաբաթ (Ավելի թույլ կարմրավուն կիսաթափանցիկ ֆոն)
-                cellBackground = 'rgba(147, 233, 247, 0.25)';
-                cellColor = '#fa0808';
+                cellBackground = 'rgba(255, 69, 58, 0.12)';
+                cellColor = '#cbd5e1';
               }
 
               return (
