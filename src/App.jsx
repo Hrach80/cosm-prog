@@ -13,7 +13,9 @@ import {
   Eye,
   EyeOff,
   Edit2,
-  Globe
+  Globe,
+  Search,
+  X
 } from 'lucide-react';
 import './App.css';
 
@@ -64,6 +66,10 @@ const translations = {
     saving: 'Պահպանվում է...',
     deleteConfirm: 'Վստա՞հ եք, որ ցանկանում եք ջնջել այս գրանցումը:',
     chartTitle: 'Ամսական եկամուտների դինամիկան',
+    dailyChartTitle: 'Ամսվա օրական եկամուտների դինամիկան',
+    searchPlaceholder: 'Որոնել հաճախորդին (անուն կամ հեռախոս)...',
+    noResults: 'Արդյունքներ չեն գտնվել',
+    call: 'Զանգել',
     weekDays: ['Երկ', 'Երք', 'Չոր', 'Հին', 'Ուրբ', 'Շաբ', 'Կիր'],
     weekDaysShort: ['Ե', 'Ե', 'Չ', 'Հ', 'Ո', 'Շ', 'Կ'],
     monthsList: [
@@ -120,6 +126,10 @@ const translations = {
     saving: 'Сохранение...',
     deleteConfirm: 'Вы уверены, что хотите удалить эту запись?',
     chartTitle: 'Динамика месячных доходов',
+    dailyChartTitle: 'Динамика ежедневных доходов за месяц',
+    searchPlaceholder: 'Поиск клиента (имя или телефон)...',
+    noResults: 'Результаты не найдены',
+    call: 'Позвонить',
     weekDays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
     weekDaysShort: ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'],
     monthsList: [
@@ -176,6 +186,10 @@ const translations = {
     saving: 'Saving...',
     deleteConfirm: 'Are you sure you want to delete this appointment?',
     chartTitle: 'Monthly Revenue Growth',
+    dailyChartTitle: 'Daily Revenue Growth for the Month',
+    searchPlaceholder: 'Search client (name or phone)...',
+    noResults: 'No results found',
+    call: 'Call',
     weekDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     weekDaysShort: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
     monthsList: [
@@ -223,6 +237,9 @@ export default function App() {
   const [selectedMonth, setSelectedMonth] = useState(currentSystemMonth);
 
   const [appointments, setAppointments] = useState([]);
+
+  // Որոնման վիճակ (Search State)
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAppointmentId, setEditingAppointmentId] = useState(null);
@@ -310,7 +327,7 @@ export default function App() {
   const currentYearNum = new Date().getFullYear();
   const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
 
-  // Ամսական վաստակի տվյալների հաշվարկ գրաֆիկի համար
+  // Տարեկան գրաֆիկի տվյալներ (ըստ ամիսների)
   const getMonthlyRevenueChartData = () => {
     return t.monthsList.map(m => {
       const monthTotal = appointments
@@ -330,6 +347,39 @@ export default function App() {
 
   const chartData = getMonthlyRevenueChartData();
   const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1000);
+
+  // Ամսական (օրական) գրաֆիկի տվյալներ (տվյալ ամսվա բոլոր օրերի համար)
+  const getDailyRevenueChartData = () => {
+    const daysCount = new Date(parseInt(selectedYear), parseInt(selectedMonth), 0).getDate();
+    const arr = [];
+    for (let i = 1; i <= daysCount; i++) {
+      const dayStr = i < 10 ? `0${i}` : `${i}`;
+      const fullDate = `${selectedYear}-${selectedMonth}-${dayStr}`;
+      const dayTotal = appointments
+        .filter(app => {
+          if (!app.date) return false;
+          return String(app.date).substring(0, 10) === fullDate;
+        })
+        .reduce((sum, app) => sum + Number(app.price || 0), 0);
+
+      arr.push({
+        dayNum: i,
+        revenue: dayTotal
+      });
+    }
+    return arr;
+  };
+
+  const dailyChartData = getDailyRevenueChartData();
+  const maxDailyRevenue = Math.max(...dailyChartData.map(d => d.revenue), 1000);
+
+  // Որոնման արդյունքներ
+  const filteredAppointments = searchQuery.trim() === '' ? [] : appointments.filter(app => {
+    const q = searchQuery.toLowerCase();
+    const nameMatch = app.name && app.name.toLowerCase().includes(q);
+    const phoneMatch = app.phone && app.phone.toLowerCase().includes(q);
+    return nameMatch || phoneMatch;
+  });
 
   const getMonthDaysArray = (yearStr, monthStr) => {
     const y = parseInt(yearStr);
@@ -690,11 +740,89 @@ export default function App() {
         )}
       </header>
 
+      {/* ՈՐՈՆՄԱՆ ՀԱՄԱԿԱՐԳ (Search Bar) */}
+      <div style={{ position: 'relative', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '14px', padding: '8px 12px', backdropFilter: 'blur(6px)' }}>
+          <Search size={16} color="#38bdf8" style={{ marginRight: '8px', flexShrink: 0 }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t.searchPlaceholder}
+            style={{ background: 'transparent', border: 'none', color: '#f8fafc', fontSize: '0.85rem', outline: 'none', width: '100%' }}
+          />
+          {searchQuery && (
+            <X size={16} color="#94a3b8" style={{ cursor: 'pointer', marginLeft: '6px' }} onClick={() => setSearchQuery('')} />
+          )}
+        </div>
+
+        {/* Որոնման արդյունքների կախովի ցուցակ */}
+        {searchQuery.trim() !== '' && (
+          <div style={{
+            position: 'absolute',
+            top: 'calc(100% + 4px)',
+            left: 0,
+            right: 0,
+            background: '#0f172a',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '14px',
+            maxHeight: '220px',
+            overflowY: 'auto',
+            zIndex: 100,
+            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            padding: '8px'
+          }}>
+            {filteredAppointments.length > 0 ? (
+              filteredAppointments.map(app => (
+                <div key={app.id} style={{
+                  padding: '8px 10px',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '0.85rem'
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <User size={12} color={currentTheme.accent} /> {app.name}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>
+                      {app.date} | {app.service} ({app.time})
+                    </div>
+                  </div>
+                  {app.phone && app.phone !== 'EMPTY' ? (
+                    <a href={`tel:${app.phone}`} style={{
+                      background: 'rgba(56, 189, 248, 0.2)',
+                      color: '#38bdf8',
+                      padding: '5px 10px',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Phone size={12} /> {t.call}
+                    </a>
+                  ) : (
+                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>-</span>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: '12px', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                {t.noResults}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* ՏԱՐԵԿԱՆ ՏԵՍՔ */}
       {currentView === 'year' && (
         <div className="year-grid-container" style={{ overflowY: 'auto', flex: 1, paddingBottom: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
 
-          {/* 1. Ամիսների ցանցը վերևում */}
           <div className="months-grid-3cols">
             {t.monthsList.map(m => {
               const isCurrentMonth = selectedYear === currentSystemYear && m.value === currentSystemMonth;
@@ -757,7 +885,7 @@ export default function App() {
             })}
           </div>
 
-          {/* 2. Ամսական վաստակի գրաֆիկը ներքևում (առանց 'կ' տառի) */}
+          {/* Տարեկան գրաֆիկ */}
           <div style={{
             background: 'rgba(15, 23, 42, 0.65)',
             border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -800,60 +928,94 @@ export default function App() {
 
       {/* ԱՄՍՎԱ ՏԵՍՔ */}
       {currentView === 'month' && (
-        <div className="month-grid-container">
-          <div className="weekdays-header">
-            {t.weekDays.map((wd, i) => (
-              <span key={i} style={{ color: i === 5 || i === 6 ? '#ff453a' : '#cbd5e1' }}>
-                {wd}
-              </span>
-            ))}
+        <div className="month-grid-container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
+          <div>
+            <div className="weekdays-header">
+              {t.weekDays.map((wd, i) => (
+                <span key={i} style={{ color: i === 5 || i === 6 ? '#ff453a' : '#cbd5e1' }}>
+                  {wd}
+                </span>
+              ))}
+            </div>
+            <div className="days-grid">
+              {daysInMonth.map((d) => {
+                if (d.empty) {
+                  return <div key={d.id} className="calendar-day-cell empty-cell" style={{ opacity: 0, pointerEvents: 'none' }} />;
+                }
+
+                const isCurrentDay = d.date === currentSystemDayFormatted;
+                const count = getAppointmentsCountForDate(d.date);
+                const hasApp = count > 0;
+
+                let cellBackground = 'rgba(15, 23, 42, 0.5)';
+                let cellColor = '#f8fafc';
+                let cellBorder = '1px solid rgba(255, 255, 255, 0.1)';
+
+                if (isCurrentDay) {
+                  cellBackground = 'rgba(56, 189, 248, 0.2)';
+                  cellBorder = `2px solid ${currentTheme.accent}`;
+                } else if (d.isHoliday) {
+                  cellBackground = 'rgba(255, 69, 58, 0.2)';
+                  cellBorder = '1px solid rgba(255, 69, 58, 0.4)';
+                  cellColor = '#ff453a';
+                } else if (d.dayOfWeek === 0) {
+                  cellBackground = 'rgba(255, 69, 58, 0.25)';
+                  cellColor = '#fca5a5';
+                } else if (d.dayOfWeek === 6) {
+                  cellBackground = 'rgba(255, 69, 58, 0.12)';
+                  cellColor = '#cbd5e1';
+                }
+
+                return (
+                  <div
+                    key={d.date}
+                    className={`calendar-day-cell ${hasApp ? 'has-appointment' : ''} ${isCurrentDay ? 'current-day' : ''}`}
+                    onClick={() => handleDayClick(d.date)}
+                    style={{
+                      background: cellBackground,
+                      border: cellBorder,
+                      color: cellColor,
+                      boxShadow: isCurrentDay ? `0 0 10px ${currentTheme.accent}` : 'none'
+                    }}
+                  >
+                    <span style={{ fontWeight: isCurrentDay || d.isHoliday ? 'bold' : 'normal' }}>{d.dayNum}</span>
+                    {hasApp && <div className="appointment-badge" style={{ background: currentTheme.accent, color: '#0f172a' }}>{count}</div>}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className="days-grid">
-            {daysInMonth.map((d) => {
-              if (d.empty) {
-                return <div key={d.id} className="calendar-day-cell empty-cell" style={{ opacity: 0, pointerEvents: 'none' }} />;
-              }
 
-              const isCurrentDay = d.date === currentSystemDayFormatted;
-              const count = getAppointmentsCountForDate(d.date);
-              const hasApp = count > 0;
-
-              let cellBackground = 'rgba(15, 23, 42, 0.5)';
-              let cellColor = '#f8fafc';
-              let cellBorder = '1px solid rgba(255, 255, 255, 0.1)';
-
-              if (isCurrentDay) {
-                cellBackground = 'rgba(56, 189, 248, 0.2)';
-                cellBorder = `2px solid ${currentTheme.accent}`;
-              } else if (d.isHoliday) {
-                cellBackground = 'rgba(255, 69, 58, 0.2)';
-                cellBorder = '1px solid rgba(255, 69, 58, 0.4)';
-                cellColor = '#ff453a';
-              } else if (d.dayOfWeek === 0) {
-                cellBackground = 'rgba(255, 69, 58, 0.25)';
-                cellColor = '#fca5a5';
-              } else if (d.dayOfWeek === 6) {
-                cellBackground = 'rgba(255, 69, 58, 0.12)';
-                cellColor = '#cbd5e1';
-              }
-
-              return (
-                <div
-                  key={d.date}
-                  className={`calendar-day-cell ${hasApp ? 'has-appointment' : ''} ${isCurrentDay ? 'current-day' : ''}`}
-                  onClick={() => handleDayClick(d.date)}
-                  style={{
-                    background: cellBackground,
-                    border: cellBorder,
-                    color: cellColor,
-                    boxShadow: isCurrentDay ? `0 0 10px ${currentTheme.accent}` : 'none'
-                  }}
-                >
-                  <span style={{ fontWeight: isCurrentDay || d.isHoliday ? 'bold' : 'normal' }}>{d.dayNum}</span>
-                  {hasApp && <div className="appointment-badge" style={{ background: currentTheme.accent, color: '#0f172a' }}>{count}</div>}
-                </div>
-              );
-            })}
+          {/* Ամսվա օրական վաստակի գրաֆիկը ներքևի դատարկ տարածքում */}
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.65)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '16px',
+            padding: '8px 12px',
+            marginTop: '10px',
+            backdropFilter: 'blur(6px)'
+          }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '6px', color: '#38bdf8', textAlign: 'center' }}>
+              {t.dailyChartTitle}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '65px', gap: '1px', paddingTop: '4px', overflowX: 'auto' }}>
+              {dailyChartData.map((item, index) => {
+                const heightPercent = Math.round((item.revenue / maxDailyRevenue) * 100);
+                return (
+                  <div key={index} style={{ flex: 1, minWidth: '6px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
+                    <div
+                      title={`${item.dayNum}-րդ օր: ${item.revenue.toLocaleString()} ֏`}
+                      style={{
+                        width: '100%',
+                        height: `${Math.max(heightPercent, 4)}%`,
+                        background: item.revenue > 0 ? '#4ade80' : 'rgba(255, 255, 255, 0.08)',
+                        borderRadius: '2px 2px 0 0'
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
