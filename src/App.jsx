@@ -477,7 +477,7 @@ export default function App() {
           backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url(${winterImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          color: '#f8fafc',
+          color: '#fcf8f8',
           position: 'relative'
         }}
       >
@@ -529,7 +529,7 @@ export default function App() {
                     position: 'absolute',
                     right: '12px',
                     cursor: 'pointer',
-                    color: '#94a3b8',
+                    color: '#2d5793',
                     display: 'flex',
                     alignItems: 'center'
                   }}
@@ -738,7 +738,7 @@ export default function App() {
         <div className="month-grid-container">
           <div className="weekdays-header">
             {t.weekDays.map((wd, i) => (
-              <span key={i} style={{ color: i === 5 ? 'rgba(248, 250, 252, 0.7)' : i === 6 ? '#ff453a' : '#cbd5e1' }}>
+              <span key={i} style={{ color: i === 5 || i === 6 ? '#ff453a' : '#cbd5e1' }}>
                 {wd}
               </span>
             ))}
@@ -754,7 +754,7 @@ export default function App() {
               const hasApp = count > 0;
 
               let cellBackground = 'rgba(15, 23, 42, 0.5)';
-              let cellColor = '#f8fafc';
+              let cellColor = '#d0b3b3';
               let cellBorder = '1px solid rgba(255, 255, 255, 0.1)';
 
               if (isCurrentDay) {
@@ -764,12 +764,14 @@ export default function App() {
                 cellBackground = 'rgba(255, 69, 58, 0.2)';
                 cellBorder = '1px solid rgba(255, 69, 58, 0.4)';
                 cellColor = '#ff453a';
-              } else if (d.isSunday) {
-                cellBackground = 'rgba(15, 23, 42, 0.85)';
-                cellColor = '#fca5a5';
-              } else if (d.isWeekend) {
-                cellBackground = 'rgba(30, 41, 59, 0.4)';
-                cellColor = '#cbd5e1';
+              } else if (d.dayOfWeek === 0) {
+                // Կիրակի (Ավելի մուգ կարմրավուն կիսաթափանցիկ ֆոն)
+                cellBackground = 'rgba(147, 233, 247, 0.25)';
+                cellColor = '#f80909';
+              } else if (d.dayOfWeek === 6) {
+                // Շաբաթ (Ավելի թույլ կարմրավուն կիսաթափանցիկ ֆոն)
+                cellBackground = 'rgba(147, 233, 247, 0.25)';
+                cellColor = '#fa0808';
               }
 
               return (
