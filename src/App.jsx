@@ -12,7 +12,8 @@ import {
   LogOut,
   Eye,
   EyeOff,
-  Edit2
+  Edit2,
+  Globe
 } from 'lucide-react';
 import './App.css';
 
@@ -22,6 +23,182 @@ import springImg from './assets/spring.jpg';
 import summerImg from './assets/summer.jpg';
 import autumnImg from './assets/autumn.jpg';
 
+// Թարգմանություններ
+const translations = {
+  am: {
+    loginTitle: 'Մուտք Համակարգ',
+    signupTitle: 'Հաշվի ստեղծում',
+    loginSubtitle: 'Մուտք գործեք ձեր օրացույցից օգտվելու համար',
+    signupSubtitle: 'Լրացրեք տվյալները գրանցվելու համար',
+    emailLabel: 'Էլ. փոստ (Email)',
+    passwordLabel: 'Գաղտնաբառ (Password)',
+    loginBtn: 'Մուտք',
+    signupBtn: 'Գրանցվել',
+    hasAccount: 'Արդե՞ն ունեք հաշիվ:',
+    noAccount: 'Չունե՞ք հաշիվ:',
+    loginLink: 'Մուտք գործեք',
+    signupLink: 'Գրանցվեք',
+    month: 'Ամիս',
+    year: 'Տարի',
+    logout: 'Ելք',
+    logoutSystem: 'Ելք համակարգից',
+    monthText: 'Ամսվա վաստակ',
+    yearlyText: 'Տարեկան վաստակ',
+    freeSlot: 'Ազատ է (Գրանցել)',
+    edit: 'Խմբագրել',
+    delete: 'Ջնջել',
+    modalCreateTitle: 'Գրանցում՝',
+    modalEditTitle: 'Խմբագրել գրանցումը',
+    modalSubtitle: 'Նշեք ժամային միջակայքը և տվյալները',
+    startTime: 'Սկիզբ',
+    endTime: 'Ավարտ',
+    clientName: 'Հաճախորդի անուն',
+    clientPhone: 'Հեռախոսահամար (Կամընտիր)',
+    service: 'Ծառայություն',
+    price: 'Գին (֏) (Կամընտիր)',
+    cancel: 'Չեղարկել',
+    save: 'Պահպանել',
+    saving: 'Պահպանվում է...',
+    weekDays: ['Երկ', 'Երք', 'Չոր', 'Հին', 'Ուրբ', 'Շաբ', 'Կիր'],
+    weekDaysShort: ['Ե', 'Ե', 'Չ', 'Հ', 'Ո', 'Շ', 'Կ'],
+    monthsList: [
+      { value: '01', name: 'Հունվար' },
+      { value: '02', name: 'Փետրվար' },
+      { value: '03', name: 'Մարտ' },
+      { value: '04', name: 'Ապրիլ' },
+      { value: '05', name: 'Մայիս' },
+      { value: '06', name: 'Հունիս' },
+      { value: '07', name: 'Հուլիս' },
+      { value: '08', name: 'Օգոստոս' },
+      { value: '09', name: 'Սեպտեմբեր' },
+      { value: '10', name: 'Հոկտեմբեր' },
+      { value: '11', name: 'Նոյեմբեր' },
+      { value: '12', name: 'Դեկտեմբեր' },
+    ]
+  },
+  ru: {
+    loginTitle: 'Вход в систему',
+    signupTitle: 'Создание аккаунта',
+    loginSubtitle: 'Войдите, чтобы пользоваться календарем',
+    signupSubtitle: 'Заполните данные для регистрации',
+    emailLabel: 'Эл. почта (Email)',
+    passwordLabel: 'Пароль (Password)',
+    loginBtn: 'Войти',
+    signupBtn: 'Зарегистрироваться',
+    hasAccount: 'Уже есть аккаунт?',
+    noAccount: 'Нет аккаунта?',
+    loginLink: 'Войдите',
+    signupLink: 'Зарегистрируйтесь',
+    month: 'Месяц',
+    year: 'Год',
+    logout: 'Выход',
+    logoutSystem: 'Выход из системы',
+    monthText: 'Доход за месяц',
+    yearlyText: 'Доход за год',
+    freeSlot: 'Свободно (Записать)',
+    edit: 'Редактировать',
+    delete: 'Удалить',
+    modalCreateTitle: 'Запись:',
+    modalEditTitle: 'Редактировать запись',
+    modalSubtitle: 'Укажите временной интервал и данные',
+    startTime: 'Начало',
+    endTime: 'Конец',
+    clientName: 'Имя клиента',
+    clientPhone: 'Номер телефона (Необязательно)',
+    service: 'Услуга',
+    price: 'Цена (֏) (Необязательно)',
+    cancel: 'Отмена',
+    save: 'Сохранить',
+    saving: 'Сохранение...',
+    weekDays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+    weekDaysShort: ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'],
+    monthsList: [
+      { value: '01', name: 'Январь' },
+      { value: '02', name: 'Февраль' },
+      { value: '03', name: 'Март' },
+      { value: '04', name: 'Апрель' },
+      { value: '05', name: 'Май' },
+      { value: '06', name: 'Июнь' },
+      { value: '07', name: 'Июль' },
+      { value: '08', name: 'Август' },
+      { value: '09', name: 'Сентябрь' },
+      { value: '10', name: 'Октябрь' },
+      { value: '11', name: 'Ноябрь' },
+      { value: '12', name: 'Декабрь' },
+    ]
+  },
+  en: {
+    loginTitle: 'Sign In',
+    signupTitle: 'Create Account',
+    loginSubtitle: 'Sign in to use your calendar',
+    signupSubtitle: 'Fill in the details to register',
+    emailLabel: 'Email',
+    passwordLabel: 'Password',
+    loginBtn: 'Sign In',
+    signupBtn: 'Sign Up',
+    hasAccount: 'Already have an account?',
+    noAccount: "Don't have an account?",
+    loginLink: 'Sign In',
+    signupLink: 'Sign Up',
+    month: 'Month',
+    year: 'Year',
+    logout: 'Logout',
+    logoutSystem: 'Logout',
+    monthText: 'Monthly Revenue',
+    yearlyText: 'Yearly Revenue',
+    freeSlot: 'Free (Book)',
+    edit: 'Edit',
+    delete: 'Delete',
+    modalCreateTitle: 'Appointment:',
+    modalEditTitle: 'Edit Appointment',
+    modalSubtitle: 'Specify time range and details',
+    startTime: 'Start',
+    endTime: 'End',
+    clientName: 'Client Name',
+    clientPhone: 'Phone Number (Optional)',
+    service: 'Service',
+    price: 'Price (֏) (Optional)',
+    cancel: 'Cancel',
+    save: 'Save',
+    saving: 'Saving...',
+    weekDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    weekDaysShort: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+    monthsList: [
+      { value: '01', name: 'January' },
+      { value: '02', name: 'February' },
+      { value: '03', name: 'March' },
+      { value: '04', name: 'April' },
+      { value: '05', name: 'May' },
+      { value: '06', name: 'June' },
+      { value: '07', name: 'July' },
+      { value: '08', name: 'August' },
+      { value: '09', name: 'September' },
+      { value: '10', name: 'October' },
+      { value: '11', name: 'November' },
+      { value: '12', name: 'December' },
+    ]
+  }
+};
+
+// Հայաստանի և միջազգային ոչ աշխատանքային (տոնական) օրեր (MM-DD ձևաչափով)
+const holidays = {
+  '01-01': 'Ամանոր (New Year)',
+  '01-02': 'Ամանոր (New Year)',
+  '01-03': 'Ամանոր',
+  '01-04': 'Ամանոր',
+  '01-05': 'Ամանոր',
+  '01-06': 'Սուրբ Ծնունդ (Christmas)',
+  '01-28': 'Բանակի օր (Army Day)',
+  '03-08': 'Կանանց տոն (Women\'s Day)',
+  '04-24': 'Ցեղասպանության հիշատակի օր (Genocide Remembrance Day)',
+  '05-01': 'Աշխատանքի օր (Labor Day)',
+  '05-09': 'Հաղթանակի և խաղաղության տոն (Victory and Peace Day)',
+  '05-28': 'Հանրապետության օր (Republic Day)',
+  '07-05': 'Սահմանադրության օր (Constitution Day)',
+  '09-21': 'Անկախության օր (Independence Day)',
+  '12-31': 'Ամանոր (New Year Eve)'
+};
+
 export default function App() {
   const [session, setSession] = useState(null);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -30,10 +207,12 @@ export default function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  const [currentView, setCurrentView] = useState('year'); // Սկզբնական տեսքը՝ 'year'
+  const [lang, setLang] = useState('am'); // Լեզու՝ 'am', 'ru', 'en'
+  const t = translations[lang];
+
+  const [currentView, setCurrentView] = useState('year'); // 'year', 'month', 'day'
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Ստանում ենք ընթացիկ տարին, ամիսը և օրը
   const now = new Date();
   const currentSystemYear = String(now.getFullYear());
   const currentSystemMonth = String(now.getMonth() + 1).padStart(2, '0');
@@ -94,10 +273,10 @@ export default function App() {
     if (isSignUp) {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) setAuthError(error.message);
-      else alert('Դուք հաջողությամբ գրանցվեցիք։');
+      else alert(lang === 'am' ? 'Դուք հաջողությամբ գրանցվեցիք։' : lang === 'ru' ? 'Вы успешно зарегистрировались.' : 'Successfully registered.');
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setAuthError('Սխալ էլ. փոստ կամ գաղտնաբառ');
+      if (error) setAuthError(lang === 'am' ? 'Սխալ էլ. փոստ կամ գաղտնաբառ' : lang === 'ru' ? 'Неверный email или пароль' : 'Invalid email or password');
     }
   };
 
@@ -109,21 +288,6 @@ export default function App() {
     '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00',
     '15:00', '16:00', '17:00', '18:00', '19:00',
     '20:00', '21:00', '22:00', '23:00'
-  ];
-
-  const monthsList = [
-    { value: '01', name: 'Հունվար' },
-    { value: '02', name: 'Փետրվար' },
-    { value: '03', name: 'Մարտ' },
-    { value: '04', name: 'Ապրիլ' },
-    { value: '05', name: 'Մայիս' },
-    { value: '06', name: 'Հունիս' },
-    { value: '07', name: 'Հուլիս' },
-    { value: '08', name: 'Օգոստոս' },
-    { value: '09', name: 'Սեպտեմբեր' },
-    { value: '10', name: 'Հոկտեմբեր' },
-    { value: '11', name: 'Նոյեմբեր' },
-    { value: '12', name: 'Դեկտեմբեր' },
   ];
 
   const monthThemes = {
@@ -145,10 +309,16 @@ export default function App() {
   const currentYearNum = new Date().getFullYear();
   const yearsList = Array.from({ length: 21 }, (_, i) => String(currentYearNum + i));
 
+  // Օրերի գեներացում՝ սկսվող Երկուշաբթի օրվանից (index 1)
   const getMonthDaysArray = (yearStr, monthStr) => {
     const y = parseInt(yearStr);
     const m = parseInt(monthStr);
-    const firstDay = new Date(y, m - 1, 1).getDay();
+
+    // JS getDay(): 0-Կիրակի, 1-Երկուշաբթի, ... 6-Շաբաթ
+    const jsFirstDay = new Date(y, m - 1, 1).getDay();
+    // Վերափոխում ենք, որ Երկուշաբթին լինի 0-րդ ինդեքսը (Կիրակին՝ 6)
+    const firstDay = jsFirstDay === 0 ? 6 : jsFirstDay - 1;
+
     const totalDays = new Date(y, m, 0).getDate();
 
     const arr = [];
@@ -157,10 +327,24 @@ export default function App() {
     }
     for (let i = 1; i <= totalDays; i++) {
       const formattedDay = i < 10 ? `0${i}` : `${i}`;
+      const monthFormatted = m < 10 ? `0${m}` : `${m}`;
+      const dateStr = `${yearStr}-${monthFormatted}-${formattedDay}`;
+      const mmdd = `${monthFormatted}-${formattedDay}`;
+
+      const dayOfWeek = new Date(y, m - 1, i).getDay(); // 0: Կիրակի, 6: Շաբաթ
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const isSunday = dayOfWeek === 0;
+      const isHoliday = !!holidays[mmdd];
+
       arr.push({
         empty: false,
-        date: `${yearStr}-${monthStr}-${formattedDay}`,
+        date: dateStr,
         dayNum: i,
+        dayOfWeek,
+        isWeekend,
+        isSunday,
+        isHoliday,
+        holidayName: holidays[mmdd] || ''
       });
     }
     return arr;
@@ -299,18 +483,34 @@ export default function App() {
           backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url(${winterImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          color: '#f8fafc'
+          color: '#f8fafc',
+          position: 'relative'
         }}
       >
+        {/* Լեզվի փոխարկիչ մուտքի էկրանին */}
+        <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Globe size={16} color="#38bdf8" />
+          <select
+            className="select-dropdown"
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+            style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+          >
+            <option value="am">Հայերեն</option>
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+
         <div className="auth-card">
-          <h2>{isSignUp ? 'Հաշվի ստեղծում' : 'Մուտք Համակարգ'}</h2>
-          <p className="modal-subtitle">{isSignUp ? 'Լրացրեք տվյալները գրանցվելու համար' : 'Մուտք գործեք ձեր օրացույցից օգտվելու համար'}</p>
+          <h2>{isSignUp ? t.signupTitle : t.loginTitle}</h2>
+          <p className="modal-subtitle">{isSignUp ? t.signupSubtitle : t.loginSubtitle}</p>
 
           {authError && <p style={{ color: '#ff453a', fontSize: '0.8rem', textAlign: 'center', marginBottom: '10px' }}>{authError}</p>}
 
           <form onSubmit={handleAuth}>
             <div className="form-group">
-              <label>Էլ. փոստ (Email)</label>
+              <label>{t.emailLabel}</label>
               <input
                 type="email"
                 required
@@ -320,7 +520,7 @@ export default function App() {
               />
             </div>
             <div className="form-group">
-              <label>Գաղտնաբառ (Password)</label>
+              <label>{t.passwordLabel}</label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -346,17 +546,17 @@ export default function App() {
               </div>
             </div>
             <button type="submit" className="save-btn" style={{ width: '100%', marginTop: '10px', background: '#38bdf8', color: '#0f172a' }}>
-              {isSignUp ? 'Գրանցվել' : 'Մուտք'}
+              {isSignUp ? t.signupBtn : t.loginBtn}
             </button>
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.8rem', color: '#94a3b8' }}>
-            {isSignUp ? 'Արդե՞ն ունեք հաշիվ:' : 'Չունե՞ք հաշիվ:'}{' '}
+            {isSignUp ? t.hasAccount : t.noAccount}{' '}
             <span
               style={{ color: '#38bdf8', cursor: 'pointer', fontWeight: 'bold' }}
               onClick={() => setIsSignUp(!isSignUp)}
             >
-              {isSignUp ? 'Մուտք գործեք' : 'Գրանցվեք'}
+              {isSignUp ? t.loginLink : t.signupLink}
             </span>
           </p>
         </div>
@@ -379,27 +579,39 @@ export default function App() {
         {currentView === 'day' ? (
           <>
             <button className="back-btn" onClick={() => setCurrentView('month')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <ChevronLeft size={18} /> Ամիս
+              <ChevronLeft size={18} /> {t.month}
             </button>
             <h1 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.95rem' }}>
               <Calendar size={16} color={currentTheme.accent} /> {selectedDate}
             </h1>
-            <button className="back-btn" onClick={handleLogout} title="Ելք" style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a' }}>
-              <LogOut size={16} />
-            </button>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <select
+                className="select-dropdown"
+                value={lang}
+                onChange={(e) => setLang(e.target.value)}
+                style={{ padding: '4px 6px', fontSize: '0.75rem' }}
+              >
+                <option value="am">HY</option>
+                <option value="ru">RU</option>
+                <option value="en">EN</option>
+              </select>
+              <button className="back-btn" onClick={handleLogout} title={t.logout} style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a' }}>
+                <LogOut size={16} />
+              </button>
+            </div>
           </>
         ) : currentView === 'month' ? (
           <>
             <button className="back-btn" onClick={() => setCurrentView('year')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <ChevronLeft size={18} /> Տարի
+              <ChevronLeft size={18} /> {t.year}
             </button>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
               <select
                 className="select-dropdown"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
               >
-                {monthsList.map(m => (
+                {t.monthsList.map(m => (
                   <option key={m.value} value={m.value}>{m.name}</option>
                 ))}
               </select>
@@ -414,34 +626,58 @@ export default function App() {
                 ))}
               </select>
             </div>
-            <button className="back-btn" onClick={handleLogout} title="Ելք" style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', padding: '8px' }}>
-              <LogOut size={16} />
-            </button>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <select
+                className="select-dropdown"
+                value={lang}
+                onChange={(e) => setLang(e.target.value)}
+                style={{ padding: '4px 6px', fontSize: '0.75rem' }}
+              >
+                <option value="am">HY</option>
+                <option value="ru">RU</option>
+                <option value="en">EN</option>
+              </select>
+              <button className="back-btn" onClick={handleLogout} title={t.logout} style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', padding: '8px' }}>
+                <LogOut size={16} />
+              </button>
+            </div>
           </>
         ) : (
-          <div className="header-title-block" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="header-title-block" style={{ justifyContent: 'space-between', alignItems: 'center', width: '100%', display: 'flex' }}>
             <h1 style={{ fontSize: '1.4rem', fontWeight: 'bold', margin: 0, color: '#f8fafc' }}>{selectedYear}</h1>
-            <select
-              className="select-dropdown"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-            >
-              {yearsList.map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-            <button className="back-btn" onClick={handleLogout} title="Ելք համակարգից" style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', padding: '8px' }}>
-              <LogOut size={16} />
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <select
+                className="select-dropdown"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                {yearsList.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+              <select
+                className="select-dropdown"
+                value={lang}
+                onChange={(e) => setLang(e.target.value)}
+                style={{ padding: '4px 6px', fontSize: '0.75rem' }}
+              >
+                <option value="am">HY</option>
+                <option value="ru">RU</option>
+                <option value="en">EN</option>
+              </select>
+              <button className="back-btn" onClick={handleLogout} title={t.logoutSystem} style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', padding: '8px' }}>
+                <LogOut size={16} />
+              </button>
+            </div>
           </div>
         )}
       </header>
 
-      {/* ՏԱՐԵԿԱՆ ՏԵՍՔ (3 ամիսը կողք կողքի ցանցով) */}
+      {/* ՏԱՐԵԿԱՆ ՏԵՍՔ */}
       {currentView === 'year' && (
         <div className="year-grid-container" style={{ overflowY: 'auto', flex: 1, paddingBottom: '10px' }}>
           <div className="months-grid-3cols">
-            {monthsList.map(m => {
+            {t.monthsList.map(m => {
               const isCurrentMonth = selectedYear === currentSystemYear && m.value === currentSystemMonth;
               const mDays = getMonthDaysArray(selectedYear, m.value);
 
@@ -466,21 +702,32 @@ export default function App() {
                     {m.name}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', fontSize: '0.5rem', color: '#94a3b8', marginBottom: '2px' }}>
-                    <span>Կ</span><span>Ե</span><span>Ե</span><span>Չ</span><span>Հ</span><span>Ո</span><span>Շ</span>
+                    {t.weekDaysShort.map((wd, i) => (
+                      <span key={i} style={{ color: i === 5 ? 'rgba(248, 250, 252, 0.6)' : i === 6 ? '#ff453a' : '#94a3b8' }}>{wd}</span>
+                    ))}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', textAlign: 'center', fontSize: '0.6rem' }}>
                     {mDays.map((d, idx) => {
                       if (d.empty) return <div key={`e-${idx}`} />;
                       const isToday = d.date === currentSystemDayFormatted;
+
+                      // Գույնի որոշում տարեկան փոքրիկ օրացույցում
+                      let dayColor = '#f8fafc';
+                      if (isToday) dayColor = '#0f172a';
+                      else if (d.isHoliday) dayColor = '#ff453a';
+                      else if (d.isSunday) dayColor = '#fca5a5';
+                      else if (d.isWeekend) dayColor = '#94a3b8';
+
                       return (
                         <div
                           key={d.date}
+                          title={d.holidayName || ''}
                           style={{
                             padding: '2px 0',
                             borderRadius: '3px',
-                            background: isToday ? '#38bdf8' : 'transparent',
-                            color: isToday ? '#0f172a' : '#f8fafc',
-                            fontWeight: isToday ? 'bold' : 'normal'
+                            background: isToday ? '#38bdf8' : d.isHoliday ? 'rgba(255, 69, 58, 0.25)' : 'transparent',
+                            color: dayColor,
+                            fontWeight: isToday || d.isHoliday ? 'bold' : 'normal'
                           }}
                         >
                           {d.dayNum}
@@ -499,7 +746,11 @@ export default function App() {
       {currentView === 'month' && (
         <div className="month-grid-container">
           <div className="weekdays-header">
-            <span>Կիր</span><span>Երկ</span><span>Երք</span><span>Չոր</span><span>Հին</span><span>Ուրբ</span><span>Շաբ</span>
+            {t.weekDays.map((wd, i) => (
+              <span key={i} style={{ color: i === 5 ? 'rgba(248, 250, 252, 0.7)' : i === 6 ? '#ff453a' : '#cbd5e1' }}>
+                {wd}
+              </span>
+            ))}
           </div>
           <div className="days-grid">
             {daysInMonth.map((d) => {
@@ -511,14 +762,49 @@ export default function App() {
               const count = getAppointmentsCountForDate(d.date);
               const hasApp = count > 0;
 
+              // Ոճեր շաբաթ-կիրակի և տոների համար
+              let cellBackground = 'rgba(15, 23, 42, 0.5)';
+              let cellColor = '#f8fafc';
+              let cellBorder = '1px solid rgba(255, 255, 255, 0.1)';
+
+              if (isCurrentDay) {
+                cellBackground = 'rgba(56, 189, 248, 0.2)';
+                cellBorder = `2px solid ${currentTheme.accent}`;
+              } else if (d.isHoliday) {
+                cellBackground = 'rgba(255, 69, 58, 0.2)';
+                cellBorder = '1px solid rgba(255, 69, 58, 0.4)';
+                cellColor = '#ff453a';
+              } else if (d.isSunday) {
+                // Կիրակի (ավելի մուգ / վառ երանգ)
+                cellBackground = 'rgba(15, 23, 42, 0.85)';
+                cellColor = '#fca5a5';
+              } else if (d.isWeekend) {
+                // Շաբաթ (թույլ երանգավորված)
+                cellBackground = 'rgba(30, 41, 59, 0.4)';
+                cellColor = '#cbd5e1';
+              }
+
               return (
                 <div
                   key={d.date}
                   className={`calendar-day-cell ${hasApp ? 'has-appointment' : ''} ${isCurrentDay ? 'current-day' : ''}`}
                   onClick={() => handleDayClick(d.date)}
-                  style={isCurrentDay ? { borderColor: currentTheme.accent, boxShadow: `0 0 10px ${currentTheme.accent}` } : {}}
+                  title={d.holidayName ? `${d.dayNum} - ${d.holidayName}` : ''}
+                  style={{
+                    background: cellBackground,
+                    border: cellBorder,
+                    color: cellColor,
+                    boxShadow: isCurrentDay ? `0 0 10px ${currentTheme.accent}` : 'none'
+                  }}
                 >
-                  <span>{d.dayNum}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                    <span style={{ fontWeight: isCurrentDay || d.isHoliday ? 'bold' : 'normal' }}>{d.dayNum}</span>
+                    {d.holidayName && (
+                      <span style={{ fontSize: '9px', color: '#ff453a', whiteCdspace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', lineHeight: '1' }}>
+                        {d.holidayName.split(' ')[0]}
+                      </span>
+                    )}
+                  </div>
                   {hasApp && <div className="appointment-badge" style={{ background: currentTheme.accent, color: '#0f172a' }}>{count}</div>}
                 </div>
               );
@@ -584,7 +870,7 @@ export default function App() {
                               alignItems: 'center',
                               gap: '4px'
                             }}
-                            title="Խմբագրել"
+                            title={t.edit}
                           >
                             <Edit2 size={12} />
                           </button>
@@ -603,6 +889,7 @@ export default function App() {
                               alignItems: 'center',
                               gap: '4px'
                             }}
+                            title={t.delete}
                           >
                             <Trash2 size={12} />
                           </button>
@@ -617,7 +904,7 @@ export default function App() {
                     </>
                   ) : (
                     <div style={{ color: '#94a3b8', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Plus size={14} /> Ազատ է (Գրանցել)
+                      <Plus size={14} /> {t.freeSlot}
                     </div>
                   )}
                 </div>
@@ -631,13 +918,13 @@ export default function App() {
         <div className="modal-overlay">
           <div className="modal-box">
             <div className="modal-header-indicator"></div>
-            <h3>{editingAppointmentId ? 'Խմբագրել գրանցումը' : `Գրանցում՝ ${selectedDate}`}</h3>
-            <p className="modal-subtitle">Նշեք ժամային միջակայքը և տվյալները</p>
+            <h3>{editingAppointmentId ? t.modalEditTitle : `${t.modalCreateTitle} ${selectedDate}`}</h3>
+            <p className="modal-subtitle">{t.modalSubtitle}</p>
 
             <form onSubmit={handleSaveAppointment}>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Սկիզբ</label>
+                  <label>{t.startTime}</label>
                   <input
                     type="time"
                     required
@@ -646,7 +933,7 @@ export default function App() {
                   />
                 </div>
                 <div className="end-group form-group" style={{ flex: 1 }}>
-                  <label>Ավարտ</label>
+                  <label>{t.endTime}</label>
                   <input
                     type="time"
                     required
@@ -657,7 +944,7 @@ export default function App() {
               </div>
 
               <div className="form-group">
-                <label>Հաճախորդի անուն</label>
+                <label>{t.clientName}</label>
                 <input
                   type="text"
                   required
@@ -667,7 +954,7 @@ export default function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Հեռախոսահամար (Կամընտիր)</label>
+                <label>{t.clientPhone}</label>
                 <input
                   type="text"
                   value={clientPhone}
@@ -676,7 +963,7 @@ export default function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Ծառայություն</label>
+                <label>{t.service}</label>
                 <input
                   type="text"
                   required
@@ -686,7 +973,7 @@ export default function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Գին (֏) (Կամընտիր)</label>
+                <label>{t.price}</label>
                 <input
                   type="number"
                   value={clientPrice}
@@ -695,7 +982,7 @@ export default function App() {
                 />
               </div>
               <div className="modal-actions" style={{ display: 'flex', gap: '8px' }}>
-                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)} style={{ flex: 1 }}>Չեղարկել</button>
+                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)} style={{ flex: 1 }}>{t.cancel}</button>
                 {editingAppointmentId && (
                   <button type="button" onClick={(e) => handleDeleteAppointment(editingAppointmentId, e)} style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff453a', border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
                     <Trash2 size={16} />
@@ -707,7 +994,7 @@ export default function App() {
                   disabled={isSubmitting}
                   style={{ flex: 1, background: currentTheme.accent, color: '#0f172a', opacity: isSubmitting ? 0.7 : 1 }}
                 >
-                  {isSubmitting ? 'Պահպանվում է...' : 'Պահպանել'}
+                  {isSubmitting ? t.saving : t.save}
                 </button>
               </div>
             </form>
@@ -717,13 +1004,13 @@ export default function App() {
 
       <footer className="financial-footer">
         <div className="finance-item">
-          <span className="finance-label" style={{ color: '#94a3b8' }}>Ամսվա վաստակ</span>
+          <span className="finance-label" style={{ color: '#94a3b8' }}>{t.monthText}</span>
           <span className="finance-value" style={{ color: currentTheme.accent, display: 'flex', alignItems: 'center', gap: '2px' }}>
             {monthlyRevenue.toLocaleString()} ֏
           </span>
         </div>
         <div className="finance-item" style={{ textAlign: 'right' }}>
-          <span className="finance-label" style={{ color: '#94a3b8' }}>Տարեկան վաստակ ({selectedYear})</span>
+          <span className="finance-label" style={{ color: '#94a3b8' }}>{t.yearlyText} ({selectedYear})</span>
           <span className="finance-value" style={{ color: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '2px' }}>
             {yearlyRevenue.toLocaleString()} ֏
           </span>
